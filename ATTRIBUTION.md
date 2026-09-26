@@ -29,13 +29,19 @@ CC-BY 3.0 要求署名。原始音频以 base64 内联在 `index.html` 里（为
 
 | 用在哪 | 原始文件 |
 |---|---|
-| CAM 01「走廊」监控画面 | `Grainy_black_and_white_CCTV_se_2026-09-26T02-05-53.png` |
+| CAM 01「前厅」监控画面 | `Grainy_black_and_white_CCTV_se_2026-09-26T02-05-53.png` |
 | CAM 02「候映室」监控画面 | `Grainy_black_and_white_CCTV_st_2026-09-26T02-01-05.png` |
 | CAM 03「机房」监控画面 | `Grainy_black_and_white_CCTV_se_2026-09-26T02-05-55.png` |
+| CAM 05「洗印暗房」监控画面 | `Grainy_black_and_white_CCTV_se_2026-09-26T01-59-32.png` |
+| CAM 06「片库」监控画面 | `Analog_horror_still_frame__deg_2026-09-26T01-59-41.png` |
 | 结局「监控室里的她」 | `Analog_horror_security_camera__2026-09-26T02-05-52.png` |
 | 走廊里追你的她（全身，带 alpha） | `Full_body_photograph_of_a_tall_2026-09-26T02-01-04.png` |
 | 她贴近时的背影（上半身，带 alpha） | `Upper_body_photograph_of_a_pal_2026-09-26T02-01-02.png` |
-| 被抓时的全屏画面 | `Extreme_close_up_of_a_dead_wom_2026-09-26T01-59-29.png` |
+| 突脸（4 张变体，见下） | `Extreme_close_up_of_a_dead_wom_2026-09-26T01-59-29.png` |
+
+**突脸那 4 张不是 4 次独立生成**，而是上面最后那张特写用 `prep_fear.py` 做的变体：
+原图 / 镜像压暗 / 极近裁切 / 惨白高饱和。理由是同一张脸连看三次就不吓人了，
+而"再做 3 张新图"比"同一张图做 3 个变体"贵得多也慢得多。
 
 ### 公有领域实拍
 

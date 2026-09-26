@@ -1,10 +1,10 @@
-﻿// 《午夜放映员 · 模拟恐怖网站版》行为测试：真机 Edge + CDP
+// 《午夜放映员 · 模拟恐怖网站版》行为测试：真机 Edge + CDP
 // 覆盖：素材内联、VHS/OSD 外观、女鬼换成真实图像、值班台开关与暂停、
 //       异常识别循环（漏报 / 误报 / 难度递增 / 假异常陷阱）、四格推进致死、
 //       通关双条件、隐藏档案页、手机端布局、无报错无 404。
 const fs = require('fs'), path = require('path'), http = require('http');
 const { spawn } = require('child_process');
-const ROOT = __dirname, GAME = path.join(ROOT, '..'), PROBE = path.join(ROOT, '_probe_analog');
+const ROOT = __dirname, GAME = path.join(ROOT, 'outputs', 'midnight-projectionist'), PROBE = path.join(ROOT, '_probe_analog');
 fs.mkdirSync(PROBE, { recursive: true });
 const EDGE = 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const PORT = 9394, WEB = 8924;
@@ -69,7 +69,7 @@ const C = () => ev('__MP.cctv');
     console.log('\n===== A. 恐怖素材内联 =====');
     await boot();
     const art = await ev('__MP.art');
-    ok(art.length === 9, '内联素材共 9 张', art.map(a => a.k));
+    ok(art.length === 15, '内联素材共 15 张（含 4 张突脸变体 + 2 个新房间）', art.map(a => a.k));
     ok(art.every(a => a.data === 'data:image/'), '每张都是 data: URI（file:// 下也能显示）', art.filter(a => a.data !== 'data:image/'));
     ok(art.every(a => a.n > 2000), '每张都有实际内容（>2KB base64）', art.map(a => a.k + ':' + a.n));
     ok(art.find(a => a.k === 'face') && art.find(a => a.k === 'face').n > 100000, 'jumpscare 大图已内联', art.find(a => a.k === 'face'));
@@ -115,14 +115,18 @@ const C = () => ev('__MP.cctv');
     ok((await C()).open === true, '状态记为已打开');
     ok(await ev('document.getElementById("cctv").hidden===false'), '值班台界面显示出来了');
     ok((await ev('__MP.state.running')) === false, '打开值班台时走廊暂停（坐在台前，她不动）');
-    const cams = await until(async () => { const d = await ev('__MP.camDom()'); return d.length === 4 && d.every(x => x.bgW > 0) ? d : false; }, 10000);
-    ok(cams.length === 4, '四路监控画面都在', cams.map(c => c.bg));
+    const cams = await until(async () => { const d = await ev('__MP.camDom()'); return d.length === 6 && d.every(x => x.bgW > 0) ? d : false; }, 10000);
+    ok(cams.length === 6, '六路监控画面都在', cams.map(c => c.bg));
     ok(cams.every(c => c.bg === 'data:image/'), '每路画面用的是内联实拍/生成素材');
     ok(cams.every(c => /^\d\d:\d\d:\d\d$/.test(c.tc)), '每路画面带自己的磁带时间码', cams[0].tc);
+    const cn = await ev('__MP.cams()');
+    ok(cn.length === 6 && cn.every(c => c.has), '六个房间各有各的背景素材', cn.map(c => c.n + ' ' + c.t));
     await ev('__MP.cctvSel(2)');
     ok((await C()).sel === 2, '点击可以选中某一路画面');
     await keyTap('Digit1');
-    ok((await C()).sel === 0, '数字键 1-4 也能选画面');
+    ok((await C()).sel === 0, '数字键 1-6 也能选画面');
+    await keyTap('Digit6');
+    ok((await C()).sel === 5, '第六路（新增的片库）也能选中');
     await keyTap('KeyC');
     ok((await C()).open === false, 'C 键关掉值班台');
     ok(await ev('document.getElementById("cctv").hidden===true'), '值班台界面收起来了');
@@ -215,25 +219,39 @@ const C = () => ev('__MP.cctv');
     await ev('__MP.revive(); __MP.setReports(1)');
     await ev('if(!__MP.cctv.open && !__MP.openCctv()) throw new Error("值班台打不开"); true');
     await ev('__MP.setTrack(3); __MP.cctvForce(3,"her")');
-    const dead = await ev('__MP.cctvAdvance(61)');
-    ok(dead.trackG >= 4, '第四格满了', { trackG: dead.trackG });
-    ok((await ev('__MP.state.dead')) === true, '四格满 = 直接结束（不是扣点血）');
+    const dg = await ev('__MP.cctvAdvance(61)');
+    ok(dg.trackG >= 4, '第四格满了', { trackG: dg.trackG });
+    const g1 = await ev('__MP.san');
+    ok(g1.siegeT >= 0, '满格不立刻黑屏：她得自己从门外走进来', { siegeT: g1.siegeT });
+    ok(g1.inCtrl === true, '这最后一段发生在值班室里，不是走廊');
+    ok(await ev('document.getElementById("cctv").hidden===true'), '她进门时值班台自动收起（你得抬头看她）');
+    await ev('__MP.sim(1.0)');
+    const g2 = await ev('__MP.ctrl');
+    ok(Math.abs(g2.doorL - g2.doorLClosed) > 0.9, '值班室的门被她撞开了', g2);
+    await ev('__MP.sim(2.0)');
+    const g3 = await ev('__MP.san');
+    ok(g3.fearOn === true, '她走到你面前 = 突脸（不是黑屏了事）', { phase: g3.phase, fearOn: g3.fearOn });
+    ok(g3.fearImgLen > 2000, '突脸铺的是真实特写，不是文字提示', g3.fearImgLen);
+    await shot('g-siege');
+    await ev('__MP.sim(1.8)');
+    ok((await ev('__MP.state.dead')) === true, '贴完脸 = 结束（不是扣点血）');
     const over = await ev(`(()=>{const c=document.getElementById('overCard');const im=c.querySelector('img.ocimg');
-      return {title:(c.querySelector('h2')||{}).textContent||'', img: im? im.src.slice(0,22):'', hidden:document.getElementById('over').hidden,
-              faceHidden:document.getElementById('faceFx').hidden};})()`);
+      return {title:(c.querySelector('h2')||{}).textContent||'', img: im? im.src.slice(0,22):'', hidden:document.getElementById('over').hidden};})()`);
     ok(over.title.indexOf('值班室') >= 0, '结局文案是"她进了值班室"', over.title);
     ok(over.img === 'data:image/jpeg;base64', '结局用了高潮画面（监控室里的她）', over.img);
-    ok(await ev('document.getElementById("cctv").hidden===true'), '被抓时值班台自动收起');
     await shot('g-death-by-door');
 
     // 低惊吓模式下不做 jumpscare
     await click('#overCard button');
     await sleep(400);
-    await ev('__MP.pause(); __MP.setCalm(true)');
-    await ev('__MP.openCctv(); __MP.setTrack(3); __MP.cctvForce(3,"her")');
+    await ev('__MP.revive(); __MP.pause(); __MP.setCalm(true)');
+    await ev('if(!__MP.cctv.open) __MP.openCctv(); true');
+    await ev('__MP.setTrack(3); __MP.cctvForce(3,"her")');
     await ev('__MP.cctvAdvance(61)');
-    const calmFace = await ev('document.getElementById("faceFx").hidden');
+    await ev('__MP.sim(0.9); __MP.sim(2.0)');
+    const calmFace = await ev('!document.getElementById("fear").classList.contains("on")');
     ok(calmFace === true, '低惊吓模式不弹全屏脸（当众演示用）', calmFace);
+    await ev('__MP.sim(1.8)');
     await ev('__MP.setCalm(false)');
     await click('#overCard button');
     await sleep(400);
@@ -243,13 +261,13 @@ const C = () => ev('__MP.cctv');
     await ev('__MP.pause(); __MP.clearGhosts(); __MP.setReports(0); __MP.startAllStations(); __MP.teleport(0, __MP.DOOR_Z-1)');
     await ev('__MP.sim(0.2)');
     const h1 = await ev('({won:__MP.state.won, prompt:__MP.ui.promptTxt, stat:__MP.ui.statTxt})');
-    ok(h1.won === false, '四台全开但异常记录不够 -> 大门不给开', h1);
+    ok(h1.won === false, '五台全开但异常记录不够 -> 大门不给开', h1);
     ok(/还差/.test(h1.prompt), '会明确告诉你还差几条', h1.prompt);
-    ok(/异常记录 0 \/ 4/.test(h1.stat), 'HUD 上能看到异常记录进度', h1.stat);
-    await ev('__MP.setReports(4)');
+    ok(/异常记录 0 \/ 5/.test(h1.stat), 'HUD 上能看到异常记录进度', h1.stat);
+    await ev('__MP.setReports(5)');
     await ev('__MP.sim(0.3)');
     const h2 = await ev('({won:__MP.state.won, title:(document.querySelector("#overCard h2")||{}).textContent||""})');
-    ok(h2.won === true, '四条异常记录 + 四台放映机 -> 通关', h2);
+    ok(h2.won === true, '五条异常记录 + 五台放映机 -> 通关', h2);
 
     // ================= I. 手机端 =================
     console.log('\n===== I. 手机端 =====================');
@@ -265,7 +283,7 @@ const C = () => ev('__MP.cctv');
               camW:Math.round(cam.width), camH:Math.round(cam.height), vis:r.top>=0&&r.bottom<=innerHeight};})()`);
     ok(!mob.xOver, '值班台在 390x844 下不横向溢出', mob);
     ok(mob.rep >= 40 && mob.close >= 40, '按钮触摸目标够大', mob);
-    ok(mob.camW > 120 && mob.camH > 60, '四路画面在小屏上仍然看得见', mob);
+    ok(mob.camW > 78 && mob.camH > 44, '六路画面在小屏上仍然看得见', mob);
     await shot('i-phone-cctv');
 
     // ================= J. 收尾 =================
@@ -276,9 +294,9 @@ const C = () => ev('__MP.cctv');
     // file:// 双击打开也要能用
     await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 800, deviceScaleFactor: 1, mobile: false });
     await navigate('file:///' + GAME.replace(/\\/g, '/') + '/index.html');
-    const fOK = await until(async () => { const v = await ev('window.__MP ? __MP.art.length : 0'); return v === 9 ? v : false; }, 12000).catch(() => 0);
-    ok(fOK === 9, 'file:// 双击打开素材照样全部加载（CORS 绕开成功）', fOK);
-    if (fOK === 9) { await click('#enter'); await until(() => ev('__MP.state.running===true'), 8000); await ev('__MP.pause(); __MP.openCctv()'); await sleep(600); await shot('j-file-protocol'); }
+    const fOK = await until(async () => { const v = await ev('window.__MP ? __MP.art.length : 0'); return v === 15 ? v : false; }, 12000).catch(() => 0);
+    ok(fOK === 15, 'file:// 双击打开素材照样全部加载（CORS 绕开成功）', fOK);
+    if (fOK === 15) { await click('#enter'); await until(() => ev('__MP.state.running===true'), 8000); await ev('__MP.pause(); __MP.openCctv()'); await sleep(600); await shot('j-file-protocol'); }
 
     console.log('\n' + '='.repeat(42));
     console.log('通过 ' + (checks.length - failures) + ' / ' + checks.length + '，失败 ' + failures);
