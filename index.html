@@ -2460,7 +2460,7 @@ function initScene(){
   camera = new THREE.PerspectiveCamera(72, innerWidth/innerHeight, 0.08, 90);
   renderer = new THREE.WebGLRenderer({antialias:false, powerPreference:"high-performance"});
   renderer.setSize(innerWidth, innerHeight);
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 1.8));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 0.5));
   renderer.setClearColor(0x04050a, 1);
   $("app").appendChild(renderer.domElement);
   clock = new THREE.Clock();
