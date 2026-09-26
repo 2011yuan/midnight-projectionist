@@ -241,6 +241,59 @@ h1{margin:0 0 10px;font-size:clamp(30px,6vw,52px);font-weight:400;letter-spacing
   .statLine{margin-top:0}
 }
 
+
+/* ==================== v5 · MPX 增强层（门禁 / 纸条 / 开锁 / 绿色终端） ==================== */
+.mpxUi{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;background:rgba(2,3,2,.88);opacity:0;transition:opacity .22s ease;pointer-events:none}
+.mpxUi.show{opacity:1;pointer-events:auto}
+.mpxUi.closing{opacity:0}
+.mpxUi[hidden]{display:none}
+.mpxPanel{background:#0b0d0a;border:1px solid #2c3324;border-radius:8px;box-shadow:0 0 60px rgba(0,0,0,.9),inset 0 0 40px rgba(30,60,30,.08);padding:18px 20px;max-width:92vw}
+/* 门禁键盘 */
+.kpTitle{font:13px/1.4 "Consolas",monospace;color:#b8a878;letter-spacing:2px;text-align:center;margin-bottom:10px}
+.kpDisp{font:26px/1.2 "Consolas",monospace;color:#e8d9a0;background:#14120c;border:1px solid #3a3424;border-radius:4px;text-align:center;letter-spacing:14px;padding:8px 0 6px;min-width:220px;text-shadow:0 0 10px rgba(232,217,160,.4)}
+.kpDisp.bad{color:#c05040;border-color:#6a2a20;animation:mpxShake .3s}
+.kpGrid{display:grid;grid-template-columns:repeat(3,64px);gap:8px;margin-top:12px;justify-content:center}
+.kpGrid button{font:18px/1 "Consolas",monospace;color:#d8c890;background:#1a180f;border:1px solid #3a3424;border-radius:4px;padding:12px 0;cursor:pointer}
+.kpGrid button:hover{background:#26221414;border-color:#6a5a34}
+.kpGrid button:active{background:#2e2a18}
+.kpMsg{font:12px/1.5 "Consolas",monospace;color:#7a705a;text-align:center;margin-top:10px;min-height:18px}
+@keyframes mpxShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+/* 纸条 */
+.notePaper{background:#d8cfae;color:#2a2418;max-width:420px;padding:26px 30px;border-radius:2px;box-shadow:0 8px 40px rgba(0,0,0,.8);transform:rotate(-.6deg);font-family:"Georgia","SimSun",serif}
+.notePaper h3{margin:0 0 12px;font-size:16px;border-bottom:1px solid #a89868;padding-bottom:8px;color:#3a2c14}
+.notePaper p{margin:0;font-size:14.5px;line-height:1.9}
+.noteClose{display:block;margin:16px auto 0;font:13px "Consolas",monospace;color:#4a3c20;background:none;border:1px solid #a89868;border-radius:3px;padding:6px 18px;cursor:pointer}
+/* 开锁 */
+.pkTitle{font:13px/1.4 "Consolas",monospace;color:#b8a878;letter-spacing:2px;text-align:center;margin-bottom:14px}
+.pkRow{display:flex;align-items:center;gap:10px;margin:10px 0}
+.pkTag{font:12px "Consolas",monospace;color:#8a7a58;width:44px;text-align:right}
+.pkBar{position:relative;width:300px;height:20px;background:#14120c;border:1px solid #3a3424;border-radius:3px;overflow:hidden}
+.pkZone{position:absolute;top:0;bottom:0;background:rgba(120,200,90,.28);border-left:1px solid #6a9a4a;border-right:1px solid #6a9a4a}
+.pkCur{position:absolute;top:-2px;bottom:-2px;width:3px;background:#e8d9a0;box-shadow:0 0 8px rgba(232,217,160,.8)}
+.pkRow.done .pkBar{border-color:#4a6a34}.pkRow.done .pkZone{background:rgba(90,160,60,.5)}
+.pkHint{font:12px/1.5 "Consolas",monospace;color:#7a705a;text-align:center;margin-top:12px}
+.pkBtn{display:block;margin:12px auto 0;font:14px "Consolas",monospace;color:#d8c890;background:#1a180f;border:1px solid #3a3424;border-radius:4px;padding:8px 26px;cursor:pointer}
+/* 绿色终端 */
+.mpxTerm{background:#010402}
+.mpxTerm .tWrap{width:min(860px,94vw);height:min(620px,88vh);display:flex;flex-direction:column;border:1px solid #1a4a22;border-radius:6px;box-shadow:0 0 80px rgba(40,220,90,.12),inset 0 0 60px rgba(20,80,30,.12);background:#020a04;overflow:hidden}
+.tHead{display:flex;justify-content:space-between;align-items:center;font:12px/1 "Consolas",monospace;color:#39c46a;letter-spacing:2px;padding:8px 12px;border-bottom:1px solid #14401c;background:#03140a;text-shadow:0 0 8px rgba(57,196,106,.5)}
+.tHead button{font:12px "Consolas",monospace;color:#39c46a;background:none;border:1px solid #1a4a22;border-radius:3px;padding:4px 10px;cursor:pointer}
+.tScr{flex:1;overflow-y:auto;padding:12px 14px;font:14px/1.55 "Consolas","Courier New",monospace;color:#33ff66;text-shadow:0 0 6px rgba(51,255,102,.45);position:relative}
+.tScr::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px)}
+.tScr .dim{color:#1f8f42}.tScr .warn{color:#ffd24a;text-shadow:0 0 6px rgba(255,210,74,.4)}.tScr .bad{color:#ff5544;text-shadow:0 0 6px rgba(255,85,68,.4)}
+.tScr .ok{color:#66ff99}
+.tIn{display:flex;gap:6px;padding:8px 14px;border-top:1px solid #14401c;background:#03140a;font:14px "Consolas",monospace;color:#33ff66;align-items:center}
+.tIn input{flex:1;background:none;border:none;outline:none;color:#33ff66;font:inherit;text-shadow:inherit;caret-color:#33ff66}
+.tCur{animation:mpxBlink 1s steps(1) infinite}
+@keyframes mpxBlink{50%{opacity:0}}
+/* 互动提示（与原 prompt 分离，不占用同一元素） */
+#mpxPrompt{position:fixed;left:50%;bottom:120px;transform:translateX(-50%);z-index:40;font:14px/1.4 "Consolas",monospace;color:#d8cfae;background:rgba(8,8,6,.72);border:1px solid #3a3424;border-radius:4px;padding:7px 16px;pointer-events:none;opacity:0;transition:opacity .15s}
+#mpxPrompt.on{opacity:1}
+#mpxPrompt b{color:#e8d9a0}
+.mpxTerm .tExit{margin-left:10px;font:13px "Consolas",monospace;color:#9affb0;background:#0c2a14;border:1px solid #2c6a3a;border-radius:3px;padding:5px 14px;cursor:pointer}
+.mpxTerm .tExit:hover{background:#143a1d}
+.mpxTerm .tExit:active{background:#1c4d28}
+
 </style>
 </head>
 <body>
@@ -302,7 +355,7 @@ h1{margin:0 0 10px;font-size:clamp(30px,6vw,52px);font-weight:400;letter-spacing
     <div class="fwhy" id="fearWhy"></div>
   </div>
   <div class="osd" id="osd">
-    <div class="lft"><b>永安影艺档案馆</b><span id="osdSite">闭路监控与放映调度系统 v1.7</span></div>
+    <div class="lft"><b>永安影艺档案馆</b><span id="osdSite">闭路监控与放映调度系统 v1.8-MPX</span></div>
     <div class="rgt"><span class="rec"><i></i>REC</span><span id="osdTc">--:--:--</span></div>
   </div>
   <div class="hud">
@@ -335,7 +388,7 @@ h1{margin:0 0 10px;font-size:clamp(30px,6vw,52px);font-weight:400;letter-spacing
     <button class="knob" id="btnCctv">值班台<br>C</button>
   </div>
   <div class="joy" id="joy" hidden><i id="joyNub"></i></div>
-  <div class="hint" id="hint">WASD 移动 · 拖动转视角 · Q 手电 · F 爆闪 · 走廊里按住 E 启动放映机 · 值班台前按住 E 坐下看监控</div>
+  <div class="hint" id="hint">WASD 移动 · 拖动转视角 · Q 手电 · F 爆闪 · 走廊按住 E 启动放映机 · 看纸条按 R · 终端按 T · 门按 X · 值班台按 C</div>
 </div>
 
 <div class="over" id="over" hidden><div class="card" id="overCard"></div></div>
@@ -375,6 +428,39 @@ h1{margin:0 0 10px;font-size:clamp(30px,6vw,52px);font-weight:400;letter-spacing
     </div>
   </div>
 </div>
+
+
+<div class="mpxUi" id="mpxKeypad" hidden>
+  <div class="mpxPanel">
+    <div class="kpTitle">东墙通道 · 门禁面板 YHA-GATE</div>
+    <div class="kpDisp" id="kpDisp">— — — —</div>
+    <div class="kpGrid" id="kpGrid"></div>
+    <div class="kpMsg" id="kpMsg">输入四位门禁密码</div>
+  </div>
+</div>
+<div class="mpxUi" id="mpxNote" hidden>
+  <div class="notePaper">
+    <h3 id="mpxNoteTitle"></h3>
+    <p id="mpxNoteBody"></p>
+    <button class="noteClose" id="mpxNoteClose">放下纸条 (R / ESC)</button>
+  </div>
+</div>
+<div class="mpxUi" id="mpxPick" hidden>
+  <div class="mpxPanel">
+    <div class="pkTitle">档案室铁门 · 三销锁芯</div>
+    <div id="pkRows"></div>
+    <button class="pkBtn" id="pkGo">拨动 (空格)</button>
+    <div class="pkHint" id="pkHint">指针扫到绿色区时拨动 · 三销全开即解锁</div>
+  </div>
+</div>
+<div class="mpxUi mpxTerm" id="mpxTerm" hidden>
+  <div class="tWrap">
+    <div class="tHead"><span>YHA-03 · 安全通道终端 · PHOSPHOR-GREEN</span><button id="mpxTermClose">断开 (ESC)</button></div>
+    <div class="tScr" id="mpxTscr"></div>
+    <div class="tIn"><span>YHA-03:~$</span><input id="mpxTin" autocomplete="off" spellcheck="false" maxlength="60"><button id="mpxTermExit" class="tExit">退出</button></div>
+  </div>
+</div>
+<div id="mpxPrompt"></div>
 
 <script src="three.min.js"></script>
 <!-- 恐怖素材：AI 生成 + 公有领域实拍。内联 base64 是为了 file:// 双击也能显示。 -->
@@ -3669,6 +3755,765 @@ window.__MP = {
   },
   resetGhosts(){ ents.forEach(e => e.mesh.visible = false); ents.length = 0; spawnEnt(HALL.zMin + 3, 0); },
   kill(){ caught(); }
+};
+
+
+// ==================== v5 · MPX 增强层 ====================
+// 员工通道 / 解密纸条 / 门禁密码 / 跑酷跳坑 / 三销开锁 / 档案室绿色终端
+// 原则：不改动本块之前的任何原有逻辑，只通过重绑定叠加。
+const MPX_PW = "1987";
+const MPX = {
+  gateOpen:false, lockOpen:false, wrong:0, lockUntil:0, charges:2,
+  notesRead:[false,false,false], battBonus:false, bonus2:false, bonus3:false,
+  py:0, vy:0, grounded:true,
+  ui:null, prevE:false, prevR:false, timers:[], pickRaf:0
+};
+const MPX_SIDE = {
+  doorZMin:-6.3, doorZMax:-3.7,
+  xMin:4.9, xMax:15.2, zMin:-5.0, zMax:1.6,
+  arcXMin:15.2, arcXMax:19.2, arcZMin:-4.6, arcZMax:1.6
+};
+const MPX_PITS = [[6.6,8.3],[10.6,12.3]];
+const MPX_CRATES = [
+  {x:5.9,z:0.9,hw:0.58,hd:0.58,h:0.62},
+  {x:9.6,z:-4.0,hw:0.58,hd:0.58,h:0.62}
+];
+const MPX_DOORS = [];
+const mpxBranchDoors = [];
+const mpxPillars = [];
+function mpxDoorOpened(cx,cz){ const d = mpxBranchDoors.find(d => d.cx===cx && d.cz===cz); return d ? !!d.opened : false; }
+function mpxTryDoor(){
+  for(const dr of MPX_DOORS.concat(mpxBranchDoors)){
+    if(Math.hypot(player.x - dr.x, player.z - dr.z) < dr.r){
+      if(dr.locked){ note(dr.lockedMsg || "门锁着"); return; }
+      if(dr.open && dr.opened){ note("门已经开了"); return; }
+      if(dr.open){ dr.opened = true; note(dr.msg || "门开了"); }
+      return;
+    }
+  }
+  note("附近没有可以开的门（走到门前按 X）");
+}
+const MPX_NOTES = [
+  {x:-3.5,z:-12,side:-1,
+   t:"值班交接记录 · 10 月 30 日",
+   b:"档案室的门禁密码又改了。老规矩，还是那一年——档案 07 里写过的那一年。全馆只有我知道档案 07 藏在哪：值班台日志最底下那条虚线。"},
+  {x:3.5,z:-18,side:1,
+   t:"维修工单 · 东墙通道",
+   b:"通道地面两处塌穿，报修三次没人来。跳过去，别掉下去——下面不会有人来捞你。门禁四位：前两位就是那年的前一半。"},
+  {x:-3.5,z:-26,side:-1,
+   t:"人事通知 · 十一月排班",
+   b:"新来的记好：后两位是月份。十一月的班最难熬，熬过去就熟了。"}
+];
+let mpxGateLeaf = null, mpxLockLeaf = null, mpxBonusMesh = null, mpxBonusMesh2 = null, mpxBonusMesh3 = null;
+const mpxNoteMeshes = [];
+
+// ---- 微型蜂鸣器：不碰原 Snd，避免任何音轨互相干扰 ----
+let mpxCtx = null;
+function mpxBeep(freq, dur, type, vol){
+  try{
+    if(!mpxCtx) mpxCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = mpxCtx.createOscillator(), g = mpxCtx.createGain();
+    o.type = type || "square"; o.frequency.value = freq;
+    g.gain.value = vol || 0.045;
+    g.gain.exponentialRampToValueAtTime(0.0001, mpxCtx.currentTime + (dur||0.08));
+    o.connect(g); g.connect(mpxCtx.destination);
+    o.start(); o.stop(mpxCtx.currentTime + (dur||0.08));
+  }catch(e){}
+}
+function mpxTimersClear(){ MPX.timers.forEach(t => clearTimeout(t)); MPX.timers.length = 0;
+  if(MPX.pickRaf){ cancelAnimationFrame(MPX.pickRaf); MPX.pickRaf = 0; } }
+
+// ---- 墙体真实化：程序化混凝土贴图 ----
+function mpxMakeWallTex(){
+  const cv = document.createElement("canvas"); cv.width = 256; cv.height = 256;
+  const g = cv.getContext("2d");
+  g.fillStyle = "#3a352d"; g.fillRect(0,0,256,256);
+  for(let i=0;i<3200;i++){ const r = Math.random()*26-13; g.fillStyle = "rgba(" + (58+r|0) + "," + (53+r|0) + "," + (45+r|0) + ",.5)"; g.fillRect(Math.random()*256, Math.random()*256, 1.6, 1.6); }
+  for(let y=0;y<256;y+=40){ g.fillStyle="rgba(0,0,0,.30)"; g.fillRect(0,y,256,2); g.fillStyle="rgba(255,255,255,.05)"; g.fillRect(0,y+2,256,1); }
+  for(let x=0;x<256;x+=82){ g.fillStyle="rgba(0,0,0,.24)"; g.fillRect(x,0,2,256); }
+  const t = new THREE.CanvasTexture(cv);
+  if(THREE.SRGBColorSpace) t.colorSpace = THREE.SRGBColorSpace;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(2,2);
+  return t;
+}
+const mpxWallTex = mpxMakeWallTex();
+function mpxWallMat(){ return new THREE.MeshStandardMaterial({ map:mpxWallTex, color:0x8c8378, roughness:0.96, metalness:0.05 }); }
+function mpxTexWalls(){
+  scene.traverse(o => {
+    if(!o.isMesh || !o.material || !o.material.isMeshStandardMaterial) return;
+    const g = o.geometry; if(!g || !g.parameters) return;
+    const p = g.parameters;
+    const isWall = (g.type === "PlaneGeometry" && (p.height === 4.4 || p.height === 3.3))
+                || (g.type === "BoxGeometry" && (p.height === 3.4 || p.height === 3.3));
+    if(isWall && !o.material.map){ o.material.map = mpxWallTex; o.material.color.setHex(0x7a7065); o.material.needsUpdate = true; }
+  });
+}
+// ---- 地图扩展：分支通道 + 不同房间 + 迷宫 ----
+function mpxBuildExpansion(){
+  const wm = mpxWallMat();
+  const fl = (x0,x1,z0,z1) => { const f = new THREE.Mesh(new THREE.PlaneGeometry(x1-x0, z1-z0), mat(0x2c2a26,0.95)); f.rotation.x=-Math.PI/2; f.position.set((x0+x1)/2,0,(z0+z1)/2); scene.add(f); return f; };
+  const ce = (x0,x1,z0,z1) => { const c = new THREE.Mesh(new THREE.PlaneGeometry(x1-x0, z1-z0), mat(0x191a1e,1)); c.rotation.x=Math.PI/2; c.position.set((x0+x1)/2,3.3,(z0+z1)/2); scene.add(c); return c; };
+  const wz = (x,z0,z1) => { const w = new THREE.Mesh(new THREE.PlaneGeometry(z1-z0,3.3), wm); w.position.set(x,1.65,(z0+z1)/2); w.rotation.y=Math.PI/2; scene.add(w); return w; };
+  const wx = (z,x0,x1) => { const w = new THREE.Mesh(new THREE.PlaneGeometry(x1-x0,3.3), wm); w.position.set((x0+x1)/2,1.65,z); w.rotation.y=z>0?Math.PI:0; scene.add(w); return w; };
+  // 北分支：放映机房 + 迷宫
+  const NX0=5.4, NX1=8.2, NZ0=-15, NZ1=-5;
+  fl(NX0,NX1,NZ0,NZ1); ce(NX0,NX1,NZ0,NZ1);
+  wx(NZ1,NX0,5.4); wx(NZ1,6.2,NX1); wz(NX0,NZ0,NZ1); wz(NX1,NZ0,NZ1); wx(NZ0,NX0,NX1);
+  const nLeaf = box(0.12,3.0,1.6,0x33291c,0.6); nLeaf.position.set(5.8,1.5,-5.0); scene.add(nLeaf);
+  const nDoor = {x:5.8,z:-5.0,r:2.4,locked:false,opened:false,cx:5.8,cz:-5.0,axis:"x",leaf:nLeaf,msg:"放映机房门开了",open:()=>{nDoor.opened=true;}};
+  mpxBranchDoors.push(nDoor);
+  mpxPillars.length = 0;
+  for(const [px,pz] of [[6.0,-7.5],[7.6,-9.5],[6.0,-11.5],[7.6,-13.0],[6.8,-14.2]]){ const p = box(0.5,3.3,0.5,0x2c2823,0.95); p.position.set(px,1.65,pz); scene.add(p); mpxPillars.push({x:px,z:pz,hw:0.35,hd:0.35}); }
+  const nLamp = new THREE.PointLight(0xc0914f,0.8,9,1.5); nLamp.position.set(6.8,2.9,-10); scene.add(nLamp);
+  const cv2 = document.createElement("canvas"); cv2.width=256; cv2.height=160; const cx2=cv2.getContext("2d");
+  cx2.fillStyle="#02120a"; cx2.fillRect(0,0,256,160); cx2.fillStyle="#33ff66"; cx2.font="14px monospace";
+  ["放映机房","设备离线","REEL 03 MISSING",""].forEach((t,i)=>cx2.fillText(t,12,30+i*26));
+  const tex2 = new THREE.CanvasTexture(cv2); if(THREE.SRGBColorSpace) tex2.colorSpace=THREE.SRGBColorSpace;
+  const scr2 = new THREE.Mesh(new THREE.PlaneGeometry(0.86,0.54), new THREE.MeshBasicMaterial({map:tex2}));
+  scr2.position.set(NX1-0.1,1.4,-14.2); scr2.rotation.y=-Math.PI/2; scene.add(scr2);
+  const bg2 = new THREE.Group();
+  const bb2 = new THREE.Mesh(new THREE.CylinderGeometry(0.085,0.085,0.3,10), mat(0x3a3a42,0.5)); bb2.position.y=0.15; bg2.add(bb2);
+  const bg2g = new THREE.PointLight(0xd8b070,0.9,5,1.5); bg2g.position.y=0.35; bg2.add(bg2g);
+  bg2.position.set(6.0,0,-14.0); scene.add(bg2); mpxBonusMesh2 = bg2;
+  // 南分支：道具库房
+  const SX0=9.4, SX1=12.6, SZ0=1.6, SZ1=12;
+  fl(SX0,SX1,SZ0,SZ1); ce(SX0,SX1,SZ0,SZ1);
+  wx(SZ0,SX0,9.6); wx(SZ0,10.4,SX1); wz(SX0,SZ0,SZ1); wz(SX1,SZ0,SZ1); wx(SZ1,SX0,SX1);
+  const sLeaf = box(0.12,3.0,1.6,0x33291c,0.6); sLeaf.position.set(10.0,1.5,1.6); scene.add(sLeaf);
+  const sDoor = {x:10.0,z:1.6,r:2.4,locked:false,opened:false,cx:10.0,cz:1.6,axis:"z",leaf:sLeaf,msg:"道具库房门开了",open:()=>{sDoor.opened=true;}};
+  mpxBranchDoors.push(sDoor);
+  const sLamp = new THREE.PointLight(0xc0914f,0.8,9,1.5); sLamp.position.set(11,2.9,7); scene.add(sLamp);
+  const bg3 = new THREE.Group();
+  const bb3 = new THREE.Mesh(new THREE.CylinderGeometry(0.085,0.085,0.3,10), mat(0x3a3a42,0.5)); bb3.position.y=0.15; bg3.add(bb3);
+  const bg3g = new THREE.PointLight(0xd8b070,0.9,5,1.5); bg3g.position.y=0.35; bg3.add(bg3g);
+  bg3.position.set(11.0,0,9.0); scene.add(bg3); mpxBonusMesh3 = bg3;
+}
+// ---- 场景搭建 ----
+function mpxBuild(){
+  const len = HALL.zMax - HALL.zMin;
+  // 东墙原版是整块平面，必须让它在门洞处"消失"——按尺寸识别后隐藏，再分段重建
+  scene.traverse(o => {
+    if(o.isMesh && o.geometry && o.geometry.parameters){
+      const p = o.geometry.parameters;
+      if(o.geometry.type === "PlaneGeometry" && p.width === len && p.height === 4.4) o.visible = false;
+      if(o.geometry.type === "BoxGeometry" && p.width === 0.09 && p.height === 0.16 && p.depth === len && o.position.x > 0) o.visible = false;
+    }
+  });
+  const wallMat = mpxWallMat();
+  // 西墙照原样补回
+  const wWall = new THREE.Mesh(new THREE.PlaneGeometry(len, 4.4), wallMat);
+  wWall.position.set(-HALL.halfW, 2.2, (HALL.zMax+HALL.zMin)/2); wWall.rotation.y = Math.PI/2; scene.add(wWall);
+  // 东墙：两段 + 门楣，中间留门洞 z∈[-6.3,-3.7]
+  const seg = (z0, z1) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(z1-z0, 4.4), wallMat);
+    m.position.set(HALL.halfW, 2.2, (z0+z1)/2); m.rotation.y = -Math.PI/2; scene.add(m); return m;
+  };
+  seg(HALL.zMin, MPX_SIDE.doorZMin); seg(MPX_SIDE.doorZMax, HALL.zMax);
+  const head = new THREE.Mesh(new THREE.PlaneGeometry(MPX_SIDE.doorZMax-MPX_SIDE.doorZMin, 1.1), wallMat);
+  head.position.set(HALL.halfW, 3.85, (MPX_SIDE.doorZMin+MPX_SIDE.doorZMax)/2); head.rotation.y = -Math.PI/2; scene.add(head);
+  // 东墙裙分段
+  for(const [z0,z1] of [[HALL.zMin, MPX_SIDE.doorZMin],[MPX_SIDE.doorZMax, HALL.zMax]]){
+    const sk = box(0.09, 0.16, z1-z0, 0x4d4030);
+    sk.position.set(HALL.halfW-0.05, 0.08, (z0+z1)/2); scene.add(sk);
+  }
+  // 门框 + 闸门（上滑开启）
+  const jamb = z => { const m = box(0.34, 3.4, 0.3, 0x2a2318, 0.7); m.position.set(HALL.halfW, 1.7, z); scene.add(m); };
+  jamb(MPX_SIDE.doorZMin - 0.15); jamb(MPX_SIDE.doorZMax + 0.15);
+  mpxGateLeaf = box(0.12, 3.3, MPX_SIDE.doorZMax - MPX_SIDE.doorZMin, 0x3a3324, 0.55);
+  mpxGateLeaf.position.set(HALL.halfW, 1.66, (MPX_SIDE.doorZMin+MPX_SIDE.doorZMax)/2); scene.add(mpxGateLeaf);
+  for(let i=0;i<4;i++){
+    const bar = box(0.13, 0.07, MPX_SIDE.doorZMax - MPX_SIDE.doorZMin - 0.2, 0x201a10);
+    bar.position.set(HALL.halfW - 0.01, 0.5 + i*0.85, (MPX_SIDE.doorZMin+MPX_SIDE.doorZMax)/2); scene.add(bar);
+  }
+  // 维修通道：地面三段（留两个坑）+ 顶 + 两墙
+  const fz = (MPX_SIDE.zMin + MPX_SIDE.zMax)/2;
+  const flSeg = [[MPX_SIDE.xMin, MPX_PITS[0][0]],[MPX_PITS[0][1], MPX_PITS[1][0]],[MPX_PITS[1][1], MPX_SIDE.xMax]];
+  for(const [x0,x1] of flSeg){
+    const f = new THREE.Mesh(new THREE.PlaneGeometry(x1-x0, MPX_SIDE.zMax-MPX_SIDE.zMin), mat(0x2c2a26, 0.95));
+    f.rotation.x = -Math.PI/2; f.position.set((x0+x1)/2, 0, fz); scene.add(f);
+  }
+  const pitDark = new THREE.Mesh(new THREE.PlaneGeometry(MPX_PITS[1][1]-MPX_PITS[0][0], MPX_SIDE.zMax-MPX_SIDE.zMin),
+    new THREE.MeshBasicMaterial({color:0x020204}));
+  pitDark.rotation.x = -Math.PI/2; pitDark.position.set((MPX_PITS[0][0]+MPX_PITS[1][1])/2, -3.0, fz); scene.add(pitDark);
+  for(const p of MPX_PITS) for(const x of p){
+    const edge = box(0.08, 0.025, MPX_SIDE.zMax-MPX_SIDE.zMin, 0x5a4a20);
+    edge.position.set(x + (x===p[0] ? -0.04 : 0.04), 0.012, fz); scene.add(edge);
+  }
+  const cCeil = new THREE.Mesh(new THREE.PlaneGeometry(MPX_SIDE.xMax-MPX_SIDE.xMin, MPX_SIDE.zMax-MPX_SIDE.zMin), mat(0x191a1e, 1));
+  cCeil.rotation.x = Math.PI/2; cCeil.position.set((MPX_SIDE.xMin+MPX_SIDE.xMax)/2, 3.3, fz); scene.add(cCeil);
+  for(const z of [MPX_SIDE.zMin, MPX_SIDE.zMax]){
+    const gaps = z < 0 ? [[5.4,6.2]] : [[9.6,10.4]];
+    let x0 = MPX_SIDE.xMin;
+    for(const g of gaps){
+      if(g[0] > x0){ const w = new THREE.Mesh(new THREE.PlaneGeometry(g[0]-x0, 3.3), wallMat); w.position.set((x0+g[0])/2,1.65,z); w.rotation.y = z>0?Math.PI:0; scene.add(w); }
+      x0 = g[1];
+    }
+    if(x0 < MPX_SIDE.xMax){ const w = new THREE.Mesh(new THREE.PlaneGeometry(MPX_SIDE.xMax-x0, 3.3), wallMat); w.position.set((x0+MPX_SIDE.xMax)/2,1.65,z); w.rotation.y = z>0?Math.PI:0; scene.add(w); }
+  }
+  // 通道尽头隔墙（档案室侧），留铁门洞 z∈[-2.7,-0.3]
+  const partX = MPX_SIDE.xMax;
+  for(const [z0,z1] of [[MPX_SIDE.zMin,-2.7],[-0.3,MPX_SIDE.zMax]]){
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(z1-z0, 3.3), mat(0x322e28, 0.95));
+    w.position.set(partX, 1.65, (z0+z1)/2); w.rotation.y = -Math.PI/2; scene.add(w);
+  }
+  const pHead = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.6), mat(0x322e28, 0.95));
+  pHead.position.set(partX, 3.0, -1.5); pHead.rotation.y = -Math.PI/2; scene.add(pHead);
+  mpxLockLeaf = box(0.14, 3.0, 2.4, 0x33291c, 0.6);
+  mpxLockLeaf.position.set(partX, 1.5, -1.5); scene.add(mpxLockLeaf);
+  // 档案室
+  const aFl = new THREE.Mesh(new THREE.PlaneGeometry(MPX_SIDE.arcXMax-partX, MPX_SIDE.arcZMax-MPX_SIDE.arcZMin), mat(0x35322c, 0.94));
+  aFl.rotation.x = -Math.PI/2; aFl.position.set((partX+MPX_SIDE.arcXMax)/2, 0, (MPX_SIDE.arcZMin+MPX_SIDE.arcZMax)/2); scene.add(aFl);
+  const aCeil = aFl.clone(); aCeil.rotation.x = Math.PI/2; aCeil.position.y = 3.1; scene.add(aCeil);
+  for(const z of [MPX_SIDE.arcZMin, MPX_SIDE.arcZMax]){
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(MPX_SIDE.arcXMax-partX, 3.1), mat(0x302c25, 0.95));
+    w.position.set((partX+MPX_SIDE.arcXMax)/2, 1.55, z); w.rotation.y = z > 0 ? Math.PI : 0; scene.add(w);
+  }
+  const aEast = new THREE.Mesh(new THREE.PlaneGeometry(MPX_SIDE.arcZMax-MPX_SIDE.arcZMin, 3.1), mat(0x302c25, 0.95));
+  aEast.position.set(MPX_SIDE.arcXMax, 1.55, (MPX_SIDE.arcZMin+MPX_SIDE.arcZMax)/2); aEast.rotation.y = -Math.PI/2; scene.add(aEast);
+  // 绿色终端桌 + 屏幕
+  const desk = box(1.7, 0.85, 0.8, 0x24261e, 0.7);
+  desk.position.set(MPX_SIDE.arcXMax-0.6, 0.42, -1.5); scene.add(desk);
+  const cv = document.createElement("canvas"); cv.width = 256; cv.height = 160;
+  const cx = cv.getContext("2d");
+  cx.fillStyle = "#02120a"; cx.fillRect(0,0,256,160);
+  cx.fillStyle = "#33ff66"; cx.font = "14px monospace";
+  ["YHA-03 TERMINAL","SECURE LINK","READY.","_"].forEach((t,i) => cx.fillText(t, 12, 26+i*22));
+  const scrTex = new THREE.CanvasTexture(cv);
+  if(THREE.SRGBColorSpace) scrTex.colorSpace = THREE.SRGBColorSpace;
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(0.86, 0.54), new THREE.MeshBasicMaterial({map:scrTex}));
+  scr.position.set(MPX_SIDE.arcXMax-0.62, 1.32, -1.5); scr.rotation.y = -Math.PI/2; scene.add(scr);
+  // 灯光：通道口绿色应急灯 + 通道两盏 + 档案室暖灯 + 终端绿光
+  const gLamp = new THREE.PointLight(0x39ff6a, 0.7, 6, 1.6); gLamp.position.set(3.5, 2.9, -5.0); scene.add(gLamp);
+  const sign = document.createElement("canvas"); sign.width = 256; sign.height = 64;
+  const sx = sign.getContext("2d");
+  sx.fillStyle = "#031408"; sx.fillRect(0,0,256,64);
+  sx.fillStyle = "#39ff6a"; sx.font = "bold 30px monospace"; sx.textAlign = "center";
+  sx.fillText("员工通道", 128, 42);
+  const signTex = new THREE.CanvasTexture(sign);
+  if(THREE.SRGBColorSpace) signTex.colorSpace = THREE.SRGBColorSpace;
+  const signM = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 0.38), new THREE.MeshBasicMaterial({map:signTex}));
+  signM.position.set(HALL.halfW-0.05, 3.35, -5.0); signM.rotation.y = -Math.PI/2; scene.add(signM);
+  for(const [lx,lz] of [[5.6,-1.7],[14.2,-1.7]]){
+    const l = new THREE.PointLight(0x2f5a3a, 0.5, 8, 1.7); l.position.set(lx, 3.0, lz); scene.add(l);
+  }
+  const aLamp = new THREE.PointLight(0xc0914f, 0.85, 8, 1.5); aLamp.position.set(17.4, 2.8, -1.5); scene.add(aLamp);
+  const tGlow = new THREE.PointLight(0x39ff6a, 0.8, 5, 1.5); tGlow.position.set(MPX_SIDE.arcXMax-1.0, 1.4, -1.5); scene.add(tGlow);
+  // 三张纸条（贴走廊两壁）
+  MPX_NOTES.forEach((n, i) => {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.42), new THREE.MeshBasicMaterial({color:0xcfc4a2}));
+    m.position.set(n.side < 0 ? -HALL.halfW+0.15 : HALL.halfW-0.15, 1.5, n.z);
+    m.rotation.y = n.side < 0 ? Math.PI/2 : -Math.PI/2; scene.add(m);
+    const l = new THREE.PointLight(0xd8cfb0, 0.3, 2.2, 1.8); l.position.set(m.position.x, 1.5, n.z); scene.add(l);
+    mpxNoteMeshes.push(m);
+  });
+  // 档案室备用电池
+  const bg = new THREE.Group();
+  const bb = new THREE.Mesh(new THREE.CylinderGeometry(0.085,0.085,0.3,10), mat(0x3a3a42, 0.5));
+  bb.position.y = 0.15; bg.add(bb);
+  const bc2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,0.06,8), new THREE.MeshBasicMaterial({color:0xd8b070}));
+  bc2.position.y = 0.32; bg.add(bc2);
+  const bglow = new THREE.PointLight(0xd8b070, 0.9, 5, 1.5); bglow.position.y = 0.35; bg.add(bglow);
+  bg.position.set(18.2, 0, 0.9); scene.add(bg);
+  mpxBonusMesh = bg;
+  mpxBuildExpansion();
+  mpxTexWalls();
+}
+function mpxResetRun(fresh){
+  mpxTimersClear(); mpxCloseUi(true);
+  MPX.py = 0; MPX.vy = 0; MPX.grounded = true; MPX.prevE = false; MPX.prevR = false;
+  if(fresh){
+    MPX.gateOpen = false; MPX.lockOpen = false; MPX.wrong = 0; MPX.lockUntil = 0;
+    MPX.charges = 2; MPX.notesRead = [false,false,false]; MPX.battBonus = false; MPX.bonus2 = false; MPX.bonus3 = false;
+  }
+  if(mpxGateLeaf) mpxGateLeaf.position.y = MPX.gateOpen ? 4.9 : 1.66;
+  if(mpxLockLeaf) mpxLockLeaf.position.z = MPX.lockOpen ? -4.05 : -1.5;
+  if(mpxBonusMesh) mpxBonusMesh.visible = !MPX.battBonus;
+  mpxBranchDoors.forEach(d => { d.opened = false; if(d.leaf){ d.leaf.position.x = d.cx; d.leaf.position.z = d.cz; } });
+  if(mpxBonusMesh2) mpxBonusMesh2.visible = !MPX.bonus2;
+  if(mpxBonusMesh3) mpxBonusMesh3.visible = !MPX.bonus3;
+}
+
+// ---- 区域判定 ----
+function mpxCanStand(x, z){
+  if(x <= 3.2) return x >= WALK.xMin && z >= WALK.zMin && z <= WALK.zMax;
+  if(x <= 4.9) return MPX.gateOpen && z >= MPX_SIDE.doorZMin && z <= MPX_SIDE.doorZMax;
+  // 分支房间与走廊 x 区间重叠但 z 在走廊外：门开后优先放行（必须在走廊判定之前）
+  if(mpxDoorOpened(5.8,-5.0) && x>=5.4 && x<=8.2 && z>=-15 && z<=-5) return true;
+  if(mpxDoorOpened(10.0,1.6) && x>=9.4 && x<=12.6 && z>=1.6 && z<=12) return true;
+  if(x <= 15.2){
+    if(!MPX.gateOpen) return false;
+    if(z < MPX_SIDE.zMin || z > MPX_SIDE.zMax) return false;
+    for(const c of MPX_CRATES) if(Math.abs(x-c.x) < c.hw && Math.abs(z-c.z) < c.hd && MPX.py < c.h - 0.3) return false;
+    return true;
+  }
+  if(x <= MPX_SIDE.arcXMax) return MPX.lockOpen && z >= MPX_SIDE.arcZMin && z <= MPX_SIDE.arcZMax;
+  for(const p of mpxPillars){ if(Math.abs(x-p.x) < p.hw && Math.abs(z-p.z) < p.hd) return false; }
+  for(const d of mpxBranchDoors){ if(Math.abs(x-d.cx)<0.7 && Math.abs(z-d.cz)<0.7) return !!d.opened; }
+  return false;
+}
+function mpxGroundAt(x, z){
+  // 坑只存在于走廊地板（z 在 [-5,1.6] 内）；分支房间地板是实心的
+  if(x > 4.9 && x <= 15.2 && z >= MPX_SIDE.zMin && z <= MPX_SIDE.zMax){
+    for(const p of MPX_PITS) if(x >= p[0] && x <= p[1]) return -99;
+    for(const c of MPX_CRATES) if(Math.abs(x-c.x) <= c.hw*0.8 && Math.abs(z-c.z) <= c.hd*0.8) return c.h;
+  }
+  return 0;
+}
+function mpxPitFall(){
+  player.x = 5.4; player.z = -1.7; MPX.py = 0; MPX.vy = 0; MPX.grounded = true;
+  try{ addSan(-6); }catch(e){}
+  note("失足掉了下去 · 理智 -6 · 爬回通道口再来");
+}
+function mpxJump(){
+  if(!running || MPX.ui || cctv.open || inFear() || siegeT >= 0) return;
+  if(!MPX.grounded) return;
+  MPX.vy = 4.9; MPX.grounded = false;
+  mpxBeep(220, 0.07, "square", 0.03);
+}
+function mpxAddDoor(o){ MPX_DOORS.push(o); }
+
+// ---- updatePlayer 叠加版：原逻辑重写 + 重力/跳跃/新区域 ----
+const _mpxOldUpdatePlayer = updatePlayer;
+updatePlayer = function(dt){
+  if(inFear() || siegeT >= 0){
+    camera.position.set(player.x, CFG.eye + MPX.py, player.z);
+    camera.rotation.order = "YXZ";
+    camera.rotation.y = player.yaw; camera.rotation.x = player.pitch;
+    return;
+  }
+  let mx = 0, mz = 0;
+  if(keys.KeyW || keys.ArrowUp) mz -= 1;
+  if(keys.KeyS || keys.ArrowDown) mz += 1;
+  if(keys.KeyA || keys.ArrowLeft) mx -= 1;
+  if(keys.KeyD || keys.ArrowRight) mx += 1;
+  mx += joyX; mz += joyY;
+  const len = Math.hypot(mx, mz);
+  if(len > 0.08){
+    if(len > 1){ mx /= len; mz /= len; }
+    const fx = -Math.sin(player.yaw), fz = -Math.cos(player.yaw);
+    const rx = Math.cos(player.yaw), rz = -Math.sin(player.yaw);
+    const nx = player.x + (fx*(-mz) + rx*mx) * CFG.walk * dt;
+    const nz = player.z + (fz*(-mz) + rz*mx) * CFG.walk * dt;
+    if(mpxCanStand(nx, nz)){ player.x = nx; player.z = nz; }
+    else if(mpxCanStand(nx, player.z)){ player.x = nx; }
+    else if(mpxCanStand(player.x, nz)){ player.z = nz; }
+    stepT -= dt;
+    if(stepT <= 0){ stepT = 0.44; Snd.step(false); }
+  } else stepT = 0;
+  if(player.x <= 3.2){ MPX.py = 0; MPX.vy = 0; MPX.grounded = true; }
+  else {
+    const g = mpxGroundAt(player.x, player.z);
+    MPX.vy -= 13 * dt;
+    MPX.py += MPX.vy * dt;
+    if(g > -50){
+      if(MPX.py <= g){ MPX.py = g; MPX.vy = 0; if(!MPX.grounded) mpxBeep(140, 0.06, "square", 0.03); MPX.grounded = true; }
+      else MPX.grounded = false;
+    } else {
+      MPX.grounded = false;
+      if(MPX.py < -2.4) mpxPitFall();
+    }
+  }
+  camera.position.set(player.x, CFG.eye + MPX.py, player.z);
+  camera.rotation.order = "YXZ";
+  camera.rotation.y = player.yaw;
+  camera.rotation.x = player.pitch;
+};
+
+// ---- 互动点 ----
+function mpxItems(){
+  const list = [];
+  if(!MPX.gateOpen) list.push({x:3.5, z:-7.0, r:2.1, label:"门禁面板 · 输入密码", fn:mpxKeypadOpen});
+  if(MPX.gateOpen && !MPX.lockOpen) list.push({x:14.4, z:-1.5, r:2.1, label:"档案室铁门 · 开锁", fn:mpxPickOpen});
+  if(MPX.lockOpen) list.push({x:MPX_SIDE.arcXMax-1.6, z:-1.5, r:2.2, label:"绿色终端 · 安全通道", fn:mpxTermOpen});
+  list.push({x:-1.2, z:0.4, r:2.6, label:"绿色终端 · 安全链路 (T)", fn:mpxTermOpen});
+  if(MPX.lockOpen && !MPX.battBonus) list.push({x:18.2, z:0.9, r:1.6, label:"备用电池 · 拾取", fn:mpxTakeBattery});
+  if(mpxDoorOpened(5.8,-5.0)){
+    list.push({x:7.9,z:-14.2,r:2.0,label:"放映机房日志 · 查看", fn:mpxNorthLog});
+    if(!MPX.bonus2) list.push({x:6.0,z:-14.0,r:1.8,label:"设备电池 · 拾取", fn:mpxTakeBonus2});
+  }
+  if(mpxDoorOpened(10.0,1.6)){
+    if(!MPX.bonus3) list.push({x:11.0,z:9.0,r:1.8,label:"库房电池 · 拾取", fn:mpxTakeBonus3});
+  }
+  MPX_NOTES.forEach((n, i) => list.push({x:n.x, z:n.z, r:2.2, key:"r", label:"纸条 · " + n.t.split(" · ")[0], fn:() => mpxNoteOpen(i)}));
+  return list;
+}
+function mpxTakeBattery(){
+  MPX.battBonus = true; if(mpxBonusMesh) mpxBonusMesh.visible = false;
+  battery = Math.min(100, battery + 40); drawHud();
+  note("备用电池 +40%"); mpxBeep(660, 0.12, "sine", 0.05);
+}
+function mpxShowPaper(t,b){ $("mpxNoteTitle").textContent=t; $("mpxNoteBody").textContent=b; mpxOpenUi("mpxNote"); mpxBeep(520,0.06,"sine",0.03); }
+function mpxNorthLog(){ mpxShowPaper("放映机房 · 设备日志", "三台放映机有两台在这里保养过。第三台——REEL 03——登记簿写着「已归还」，可库房里没有它的箱子。它最后一次出现，是停电前一晚的监控里，画面里它自己转了起来。"); }
+function mpxTakeBonus2(){ MPX.bonus2=true; if(mpxBonusMesh2) mpxBonusMesh2.visible=false; battery=Math.min(100,battery+40); drawHud(); note("设备电池 +40%"); mpxBeep(660,0.12,"sine",0.05); }
+function mpxTakeBonus3(){ MPX.bonus3=true; if(mpxBonusMesh3) mpxBonusMesh3.visible=false; battery=Math.min(100,battery+40); drawHud(); note("库房电池 +40%"); mpxBeep(660,0.12,"sine",0.05); }
+const _mpxOldStepWorld = stepWorld;
+stepWorld = function(dt, t){
+  _mpxOldStepWorld(dt, t);
+  // 闸门 / 铁门动画
+  if(mpxGateLeaf){ const ty = MPX.gateOpen ? 4.9 : 1.66; mpxGateLeaf.position.y += (ty - mpxGateLeaf.position.y) * Math.min(1, dt*2.4); }
+  if(mpxLockLeaf){ const tz = MPX.lockOpen ? -4.05 : -1.5; mpxLockLeaf.position.z += (tz - mpxLockLeaf.position.z) * Math.min(1, dt*2.4); }
+  for(const d of mpxBranchDoors){ if(d.leaf){ const t = d.opened ? (d.axis==="x" ? d.cx+4 : d.cz+4) : (d.axis==="x" ? d.cx : d.cz); d.leaf.position[d.axis] += (t - d.leaf.position[d.axis]) * Math.min(1, dt*2.4); } }
+  // 互动提示
+  const pr = $("mpxPrompt");
+  if(!running || MPX.ui || cctv.open || dead || won || inFear() || siegeT >= 0){
+    pr.classList.remove("on"); MPX.prevE = !!keys.KeyE; return;
+  }
+  let near = null, best = 1e9;
+  for(const it of mpxItems()){
+    const d = Math.hypot(player.x - it.x, player.z - it.z);
+    if(d < it.r && d < best){ best = d; near = it; }
+  }
+  if(near && MPX.py < 0.5){
+    const useR = !!near.key && near.key === "r";
+    pr.innerHTML = "按 <b>" + (useR ? "R" : "E") + "</b> · " + near.label;
+    pr.classList.add("on");
+    const now = useR ? !!keys.KeyR : !!keys.KeyE;
+    const prev = useR ? MPX.prevR : MPX.prevE;
+    if(now && !prev) near.fn();
+    if(useR) MPX.prevR = now; else MPX.prevE = now;
+  } else {
+    pr.classList.remove("on"); MPX.prevE = !!keys.KeyE; MPX.prevR = !!keys.KeyR;
+  }
+};
+
+// ---- 覆盖层通用 ----
+const MPX_UIS = ["mpxKeypad","mpxNote","mpxPick","mpxTerm"];
+function mpxOpenUi(id){
+  if(MPX.ui) return;
+  MPX.ui = id;
+  if(cctv.open) closeCCTV(true);
+  MPX_UIS.forEach(u => { $(u).hidden = (u !== id); if(u === id){ $(u).classList.remove("closing"); requestAnimationFrame(() => $(u).classList.add("show")); } });
+  stop(); clearKeys();
+  MPX.prevE = true; MPX.prevR = true;
+}
+function mpxCloseUi(noResume){
+  mpxTimersClear();
+  const cur = MPX.ui;
+  if(!cur) return;
+  const el = $(cur);
+  MPX.ui = null;
+  if(el){ el.classList.remove("show"); el.classList.add("closing"); setTimeout(() => { if(el){ el.hidden = true; el.classList.remove("closing"); } }, 170); }
+  if(!noResume && !dead && !won && !$("game").hidden) start();
+}
+MPX_UIS.forEach(u => $(u).addEventListener("click", e => { if(e.target === $(u)) mpxCloseUi(); }));
+
+// ---- 纸条（解密线索） ----
+function mpxNoteOpen(i){
+  const n = MPX_NOTES[i];
+  MPX.notesRead[i] = true;
+  $("mpxNoteTitle").textContent = n.t;
+  $("mpxNoteBody").textContent = n.b;
+  mpxOpenUi("mpxNote"); mpxBeep(520, 0.06, "sine", 0.03);
+}
+$("mpxNoteClose").addEventListener("click", () => mpxCloseUi());
+
+// ---- 门禁键盘（密码） ----
+let mpxKbuf = "";
+(function buildKeypad(){
+  const g = $("kpGrid");
+  ["1","2","3","4","5","6","7","8","9","清除","0","确认"].forEach(k => {
+    const b = document.createElement("button");
+    b.textContent = k;
+    b.addEventListener("click", () => mpxKey(k));
+    g.appendChild(b);
+  });
+})();
+function mpxKeyDraw(){ $("kpDisp").textContent = (mpxKbuf + "————").slice(0,4).split("").join(" "); }
+function mpxKey(k){
+  if(k === "清除"){ mpxKbuf = ""; mpxKeyDraw(); return; }
+  if(k === "确认"){ mpxKeyCheck(); return; }
+  if(mpxKbuf.length < 4){ mpxKbuf += k; mpxKeyDraw(); mpxBeep(700, 0.04, "square", 0.03); }
+}
+function mpxKeyCheck(){
+  const disp = $("kpDisp"), msg = $("kpMsg");
+  if(performance.now() < MPX.lockUntil){
+    msg.textContent = "门禁锁定中 · 剩余 " + Math.ceil((MPX.lockUntil - performance.now())/1000) + " 秒";
+    return;
+  }
+  if(mpxKbuf === MPX_PW){
+    MPX.gateOpen = true;
+    disp.classList.remove("bad");
+    msg.textContent = "ACCESS GRANTED · 闸门开启";
+    mpxBeep(880, 0.16, "sine", 0.06);
+    note("东墙闸门开了");
+    setTimeout(() => mpxCloseUi(), 700);
+  } else {
+    MPX.wrong++;
+    mpxKbuf = ""; mpxKeyDraw();
+    disp.classList.add("bad"); mpxBeep(160, 0.2, "square", 0.05);
+    setTimeout(() => disp.classList.remove("bad"), 350);
+    if(MPX.wrong >= 3){
+      MPX.lockUntil = performance.now() + 30000; MPX.wrong = 0;
+      msg.textContent = "连续输错 · 门禁锁定 30 秒";
+    } else msg.textContent = "密码错误 · 已错 " + MPX.wrong + " 次";
+  }
+}
+function mpxKeypadOpen(){ mpxKbuf = ""; mpxKeyDraw(); $("kpMsg").textContent = "输入四位门禁密码"; mpxOpenUi("mpxKeypad"); }
+
+// ---- 三销开锁 ----
+const MPX_PINS = [false, false, false];
+let mpxZones = [], mpxPhase = 0;
+function mpxPickOpen(){
+  MPX_PINS[0] = MPX_PINS[1] = MPX_PINS[2] = false;
+  mpxOpenUi("mpxPick"); mpxPickZone(); mpxPickDraw(); mpxPickSpin();
+}
+function mpxPickZone(){
+  const idx = MPX_PINS.indexOf(false);
+  const w = [26, 17, 11][idx];
+  mpxZones[idx] = { a: 8 + Math.random()*(84-w), w };
+}
+function mpxPickDraw(){
+  const box = $("pkRows"); box.innerHTML = "";
+  for(let i=0;i<3;i++){
+    const row = document.createElement("div");
+    row.className = "pkRow" + (MPX_PINS[i] ? " done" : "");
+    const w = MPX.zones ? 0 : 0; // noop
+    const z = mpxZones[i] || {a:40, w:20};
+    row.innerHTML = '<div class="pkTag">销 ' + (i+1) + '</div>' +
+      '<div class="pkBar"><div class="pkZone" style="left:' + z.a + '%;width:' + z.w + '%"></div>' +
+      '<div class="pkCur" style="left:0%"></div></div>';
+    box.appendChild(row);
+  }
+}
+function mpxPickSpin(){
+  if(MPX.pickRaf) cancelAnimationFrame(MPX.pickRaf);
+  const idx0 = MPX_PINS.indexOf(false);
+  const speeds = [1.1, 1.55, 2.05];
+  const t0 = performance.now();
+  const loop = () => {
+    if(MPX.ui !== "mpxPick"){ MPX.pickRaf = 0; return; }
+    const idx = MPX_PINS.indexOf(false);
+    const rows = $("pkRows").children;
+    for(let i=0;i<rows.length;i++){
+      const cur = rows[i].querySelector(".pkCur");
+      if(!cur) continue;
+      if(MPX_PINS[i]) cur.style.left = "calc(" + (mpxZones[i].a + mpxZones[i].w/2) + "% - 1px)";
+      else if(i === idx){
+        const ph = ((performance.now() - t0)/1000) * speeds[idx] * Math.PI;
+        cur.style.left = (50 + 48*Math.sin(ph)) + "%";
+      } else cur.style.left = "0%";
+    }
+    MPX.pickRaf = requestAnimationFrame(loop);
+  };
+  MPX.pickRaf = requestAnimationFrame(loop);
+}
+function mpxPluck(){
+  const idx = MPX_PINS.indexOf(false);
+  if(idx < 0) return;
+  const rows = $("pkRows").children;
+  const cur = rows[idx] && rows[idx].querySelector(".pkCur");
+  if(!cur) return;
+  const pos = parseFloat(cur.style.left) || 0;
+  const z = mpxZones[idx];
+  if(pos >= z.a && pos <= z.a + z.w){
+    MPX_PINS[idx] = true; mpxBeep(760, 0.09, "sine", 0.05);
+    if(MPX_PINS.indexOf(false) < 0){
+      MPX.lockOpen = true;
+      $("pkHint").textContent = "锁芯全开 · 铁门解锁";
+      mpxBeep(980, 0.2, "sine", 0.06);
+      note("档案室铁门开了");
+      setTimeout(() => mpxCloseUi(), 700);
+    } else { mpxPickZone(); mpxPickDraw(); }
+  } else {
+    mpxBeep(150, 0.12, "square", 0.05);
+    mpxPickZone(); mpxPickDraw();
+    $("pkHint").textContent = "拨空了 · 销 " + (idx+1) + " 重新来";
+  }
+}
+$("pkGo").addEventListener("click", mpxPluck);
+
+// ---- 绿色终端 ----
+function mpxTecho(html, cls){
+  const d = document.createElement("div");
+  if(cls) d.className = cls;
+  d.innerHTML = html;
+  $("mpxTscr").appendChild(d);
+  $("mpxTscr").scrollTop = 1e9;
+}
+function mpxTermOpen(){
+  mpxOpenUi("mpxTerm");
+  const scr = $("mpxTscr"); scr.innerHTML = "";
+  mpxTecho("YHA-03 SECURE TERMINAL · PHOSPHOR-GREEN · 1996-11-04", "dim");
+  const boot = ["接入安全链路 …… <span class='ok'>OK</span>", "读取监控总线 …… <span class='ok'>6 路在线</span>",
+    "门禁控制权 …… <span class='ok'>已取得</span>", "输入 help 查看可用指令。"];
+  boot.forEach((l, i) => MPX.timers.push(setTimeout(() => { mpxTecho(l); if(i === boot.length-1) $("mpxTin").focus(); }, 240*(i+1))));
+}
+$("mpxTermClose").addEventListener("click", () => mpxCloseUi());
+$("mpxTermExit").addEventListener("click", () => mpxCloseUi());
+$("mpxTin").addEventListener("keydown", e => {
+  if(e.key === "Enter"){
+    const raw = $("mpxTin").value.trim();
+    $("mpxTin").value = "";
+    if(raw){ mpxTecho('<span class="dim">YHA-03:~$</span> ' + mpxEsc(raw)); mpxTermRun(raw); }
+  }
+});
+function mpxEsc(t){ return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function mpxBearing(e){
+  const dx = e.x - player.x, dz = e.z - player.z, d = Math.hypot(dx, dz);
+  const ang = Math.atan2(dx, -dz) - player.yaw;
+  let a = ((ang*180/Math.PI)%360+360)%360;
+  const dir = a < 45 || a >= 315 ? "正前" : a < 135 ? "右前" : a < 225 ? "身后" : "左前";
+  return { d, dir };
+}
+function mpxTermRun(raw){
+  const cmd = raw.toLowerCase();
+  const arg = cmd.split(/\s+/).slice(1).join(" ");
+  const c0 = cmd.split(/\s+/)[0];
+  const alias = { "帮助":"help", "状态":"status", "监控":"cams", "她在哪":"ghost", "日志":"log", "充电":"charge", "提示":"hint", "清屏":"clear", "退出":"exit", "开门":"open", "手电":"torch", "时间":"time" };
+  const c = alias[c0] || c0;
+  if(c === "help" || c === "?"){
+    mpxTecho("可用指令：", "dim");
+    [["help","指令列表"],["status","全馆状态总览"],["cams [1-6]","监控画面巡检"],["ghost","她的方位侦测"],
+     ["log","值班日志回放"],["unlock &lt;四位&gt;","远程门禁"],["open","大门电磁锁（需放映机 4/4）"],
+     ["charge","备用电源 +35%（剩 " + MPX.charges + " 次）"],["torch on|off","手电远程开关"],
+     ["hint","下一步该做什么"],["time","磁带时间码"],["clear","清屏"],["exit","断开"]].forEach(r =>
+      mpxTecho("  <span class='ok'>" + r[0] + "</span>  " + r[1]));
+  }
+  else if(c === "status"){
+    mpxTecho("放映机 " + startedCount + "/" + STATIONS.length + " · 异常记录 " + cctv.reports + "/" + NEED_REPORTS +
+      " · 她的推进 " + cctv.trackG + "/4");
+    mpxTecho("理智 " + Math.round(sanVal) + "% · 电量 " + Math.round(battery) + "% · 手电 " + (torchOn ? "开" : "关"));
+    mpxTecho("东墙门禁 " + (MPX.gateOpen ? "<span class='ok'>已开</span>" : "锁定") +
+      " · 档案室铁门 " + (MPX.lockOpen ? "<span class='ok'>已开</span>" : "锁定") +
+      " · 大门 " + (door && door.open ? "<span class='ok'>已开</span>" : "闭合"));
+  }
+  else if(c === "cams"){
+    if(arg && /^[1-6]$/.test(arg)){ cctv.sel = (+arg) - 1; mpxTecho("主监已切到 CAM 0" + arg, "ok"); }
+    CAMS.forEach((cm, i) => {
+      let st = "<span class='dim'>画面正常</span>";
+      if(cctv.anom && cctv.anom.cam === i){
+        st = (cctv.anom.real ? "<span class='bad'>!! " : "<span class='warn'>~~ ") + (ANOM_LABEL[cctv.anom.type] || "异常") +
+             (cctv.anom.real ? " ← 真异常，快回值班台记录</span>" : "（磁带毛病，别记）</span>");
+      }
+      mpxTecho("CAM 0" + (i+1) + " " + cm.t + " · " + st + (cctv.sel === i ? " <span class='dim'>[主监]</span>" : ""));
+    });
+  }
+  else if(c === "ghost"){
+    if(!ents.length){ mpxTecho("监控总线上没有她的信号。……暂时。", "dim"); return; }
+    mpxTecho("侦测到 " + ents.length + " 个信号源：", "dim");
+    ents.forEach((e, i) => {
+      const b = mpxBearing(e);
+      mpxTecho("  信号" + (i+1) + " · 距你 <span class='" + (b.d < 6 ? "bad" : "warn") + "'>" + b.d.toFixed(1) + "m</span> · 你的" + b.dir + (e.frozen ? " · <span class='ok'>已被光钉住</span>" : " · <span class='bad'>在移动</span>"));
+    });
+  }
+  else if(c === "log"){
+    if(!cctv.log.length){ mpxTecho("值班日志是空的。", "dim"); return; }
+    cctv.log.forEach(l => mpxTecho("  " + mpxEsc(String(l).replace(/<[^>]*>/g, ""))));
+  }
+  else if(c === "unlock"){
+    if(arg === MPX_PW){
+      if(MPX.gateOpen) mpxTecho("东墙门禁本来就是开的。", "dim");
+      else { MPX.gateOpen = true; mpxTecho("<span class='ok'>ACCESS GRANTED · 东墙闸门已远程开启</span>"); }
+    } else mpxTecho("<span class='bad'>ACCESS DENIED</span> · 密码不对（输入 hint）", "bad");
+  }
+  else if(c === "open"){
+    if(startedCount >= STATIONS.length){
+      if(door && !door.open){ openDoor(); mpxTecho("<span class='ok'>大门电磁锁已释放</span>"); }
+      else mpxTecho("大门已经开了。", "dim");
+    } else mpxTecho("<span class='bad'>条件不符</span> · 放映机 " + startedCount + "/" + STATIONS.length);
+  }
+  else if(c === "charge"){
+    if(MPX.charges <= 0) mpxTecho("<span class='bad'>备用电源已耗尽</span>");
+    else if(battery >= 99) mpxTecho("电量是满的，省着点。", "dim");
+    else { MPX.charges--; battery = Math.min(100, battery + 35); drawHud();
+      mpxTecho("<span class='ok'>备用电源接入 +35%</span> · 剩余 " + MPX.charges + " 次"); }
+  }
+  else if(c === "torch"){
+    if(arg === "on" || arg === "off"){ applyTorch(arg === "on"); mpxTecho("手电已" + (arg === "on" ? "打开" : "关闭")); }
+    else mpxTecho("用法：torch on|off");
+  }
+  else if(c === "hint"){
+    if(!MPX.notesRead.every(v => v)) mpxTecho("走廊两壁贴着三张纸条。档案 07 在值班台日志最底下那条虚线里。", "dim");
+    else if(!MPX.gateOpen) mpxTecho("四位数：那一年 + 那一月。去东墙门禁输进去。", "dim");
+    else if(!MPX.lockOpen) mpxTecho("通道里两处塌穿，跳过去。尽头铁门要三销全拨开。", "dim");
+    else mpxTecho("终端已经在你手里了。剩下的，看你自己。", "dim");
+  }
+  else if(c === "time"){ mpxTecho("磁带时间码：1996-11-04 " + tapeClock()); }
+  else if(c === "whoami"){ mpxTecho("值班员 · 编号 03 · 你不该翻到这一层。"); }
+  else if(c === "she" || c === "她"){ mpxTecho("<span class='bad'>她知道你在这台终端上。</span>", "bad"); }
+  else if(c === "sudo"){ mpxTecho("对不起，这里没有管理员。1987 年以后就没有了。", "dim"); }
+  else if(c === "clear"){ $("mpxTscr").innerHTML = ""; }
+  else if(c === "exit" || c === "quit"){ mpxCloseUi(); return; }
+  else mpxTecho("未知指令：" + mpxEsc(raw) + "（输入 help）", "warn");
+}
+
+// ---- 键盘输入路由 ----
+window.addEventListener("keydown", e => {
+  if(MPX.ui === "mpxTerm"){ if(e.code === "Escape") mpxCloseUi(); return; }
+  if(MPX.ui === "mpxKeypad"){
+    if(e.code === "Escape") mpxCloseUi();
+    else if(/^Digit\d$/.test(e.code) || /^Numpad\d$/.test(e.code)) mpxKey(e.code.slice(-1));
+    else if(e.code === "Backspace"){ mpxKbuf = mpxKbuf.slice(0,-1); mpxKeyDraw(); }
+    else if(e.code === "Enter") mpxKeyCheck();
+    return;
+  }
+  if(MPX.ui === "mpxPick"){
+    if(e.code === "Escape") mpxCloseUi();
+    else if(e.code === "Space"){ e.preventDefault(); mpxPluck(); }
+    return;
+  }
+  if(MPX.ui === "mpxNote"){ if(e.code === "Escape" || e.code === "KeyR" || e.code === "Enter") mpxCloseUi(); return; }
+  if(e.code === "KeyT" && !MPX.ui && !cctv.open && running && !dead && !won && siegeT < 0) mpxTermOpen();
+  if(e.code === "KeyX" && !MPX.ui && !cctv.open && running && !dead && !won) mpxTryDoor();
+  if(e.code === "Space" && !e.repeat) mpxJump();
+});
+
+// ---- 触屏按钮：跳 / 互动 ----
+if(isTouch){
+  const bar = document.querySelector(".torchbar");
+  const jb = document.createElement("button");
+  jb.className = "knob"; jb.innerHTML = "跳<br>␣";
+  jb.addEventListener("click", mpxJump); bar.appendChild(jb);
+  const ab = document.createElement("button");
+  ab.className = "knob"; ab.innerHTML = "互动<br>E";
+  ab.addEventListener("click", () => {
+    if(MPX.ui){ return; }
+    let near = null, best = 1e9;
+    for(const it of mpxItems()){
+      const d = Math.hypot(player.x - it.x, player.z - it.z);
+      if(d < it.r && d < best){ best = d; near = it; }
+    }
+    if(near) near.fn(); else note("这里没有可以互动的东西");
+  });
+  bar.appendChild(ab);
+  const rb = document.createElement("button");
+  rb.className = "knob"; rb.innerHTML = "重新<br>↻";
+  rb.addEventListener("click", () => { if(confirm("重新开始本局？")) location.reload(); });
+  bar.appendChild(rb);
+}
+
+// ---- 接线：initScene / resetRun 叠加 ----
+const _mpxOldInitScene = initScene;
+initScene = function(){ _mpxOldInitScene(); try{ mpxBuild(); }catch(e){ /* 增强层失败不拖垮主游戏 */ } };
+const _mpxOldResetRun = resetRun;
+resetRun = function(fresh){ _mpxOldResetRun(fresh); mpxResetRun(!!fresh); };
+
+// ---- 测试钩子 ----
+window.__MP.mpx = {
+  get state(){ return { gateOpen:MPX.gateOpen, lockOpen:MPX.lockOpen, notesRead:MPX.notesRead.slice(),
+    py:+MPX.py.toFixed(2), grounded:MPX.grounded, ui:MPX.ui, charges:MPX.charges,
+    password:MPX_PW, bonus:MPX.battBonus,
+    built:!!mpxGateLeaf, lockLeafZ:mpxLockLeaf?+mpxLockLeaf.position.z.toFixed(2):null }; },
+  openGate(){ MPX.gateOpen = true; return true; },
+  openLock(){ MPX.lockOpen = true; return true; },
+  note(i){ return { t:MPX_NOTES[i].t, b:MPX_NOTES[i].b }; },
+  canStand(x,z){ return !!mpxCanStand(x,z); },
+  doors(){ return MPX_DOORS.concat(mpxBranchDoors).map(d => ({x:d.x,z:d.z,r:d.r,locked:!!d.locked,opened:!!d.opened,axis:d.axis})); },
+  readNote(i){ mpxNoteOpen(i); return MPX.ui; },
+  keypadOpen(){ mpxKeypadOpen(); return MPX.ui; },
+  key(k){ mpxKey(String(k)); return mpxKbuf; },
+  keyCheck(){ mpxKeyCheck(); return $("kpMsg").textContent; },
+  pickOpen(){ mpxPickOpen(); return MPX.ui; },
+  pickCur(){ const rows = $("pkRows").children; const idx = MPX_PINS.indexOf(false);
+    const cur = rows[idx] && rows[idx].querySelector(".pkCur"); return cur ? parseFloat(cur.style.left)||0 : -1; },
+  pluck(){ mpxPluck(); return MPX_PINS.slice(); },
+  termOpen(){ mpxTermOpen(); return MPX.ui; },
+  term(cmd){ mpxTermRun(cmd); const scr = $("mpxTscr"); return scr.lastChild ? scr.lastChild.textContent : ""; },
+  termOut(){ return [].slice.call($("mpxTscr").children).map(d => d.textContent); },
+  uiOpen(){ return MPX.ui; },
+  closeUi(){ mpxCloseUi(); return MPX.ui; },
+  jump(){ mpxJump(); return { vy:MPX.vy, grounded:MPX.grounded }; },
+  takeBattery(){ mpxTakeBattery(); return MPX.battBonus; }
 };
 
 const rec0 = store.read();
