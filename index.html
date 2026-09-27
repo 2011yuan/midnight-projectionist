@@ -4298,6 +4298,29 @@ function mpxJump(){
   MPX.vy = 5.9; MPX.grounded = false;
   mpxBeep(220, 0.07, "square", 0.03);
 }
+// ---- 撞墙原因提示：被挡住的那一刻告诉你为什么、该按什么 ----
+let mpxHintAt = 0;
+function mpxBlockedHint(x, z){
+  const now = performance.now();
+  if(now - mpxHintAt < 1700) return;
+  mpxHintAt = now;
+  let msg = null;
+  if(x > 3.2 && x <= 15.2 && !MPX.gateOpen) msg = "东墙门禁锁着 · 回大厅走到墙边面板按 X 输 4 位密码";
+  else if(x > 15.2 && x <= 19.2 && !MPX.lockOpen) msg = "档案室铁门锁着 · 站在黄线标记处按 X 撬锁";
+  else if(x > 19.2 && !MPX.vaultOpen) msg = "舱门是 4 位电子锁 · 先恢复深区供电，密码在纸条与胶片里";
+  else {
+    for(const c of MPX_CRATES){
+      if(Math.abs(x - c.x) < c.hw + 0.2 && Math.abs(z - c.z) < c.hd + 0.2 && MPX.py < c.h - 0.3){
+        msg = "货箱挡路 · 按空格（手机点「跳」）翻过去"; break;
+      }
+    }
+    if(!msg) for(const d of mpxBranchDoors){
+      if(!d.opened && Math.abs(x - d.cx) < 1.0 && Math.abs(z - d.cz) < 1.0){ msg = "这扇门关着 · 靠近后按 X 开"; break; }
+    }
+    if(!msg && z < MPX_SIDE.zMin - 0.05 && x > 4.9) msg = "再往北是断口边缘 · 沿地面荧光绿线往南走";
+  }
+  if(msg) note(msg);
+}
 function mpxAddDoor(o){ MPX_DOORS.push(o); }
 
 // ===== MPX 导航指引层 v1：常驻「我在哪 / 下一步去哪」+ 未开门的荧光地面标记 =====
@@ -4428,10 +4451,19 @@ updatePlayer = function(dt){
     if(mpxCanStand(nx, nz)){ player.x = nx; player.z = nz; }
     else if(mpxCanStand(nx, player.z)){ player.x = nx; }
     else if(mpxCanStand(player.x, nz)){ player.z = nz; }
+    else mpxBlockedHint(nx, nz);
     stepT -= dt;
     if(stepT <= 0){ stepT = 0.44; Snd.step(false); }
   } else stepT = 0;
-  if(player.x <= 3.2){ MPX.py = 0; MPX.vy = 0; MPX.grounded = true; }
+  if(player.x <= 3.2){
+    // 大厅里也要能跳：只有落地静止时才清零，空中继续走重力
+    if(MPX.py > 0 || MPX.vy > 0){
+      MPX.vy -= 13 * dt;
+      MPX.py += MPX.vy * dt;
+      if(MPX.py <= 0){ MPX.py = 0; MPX.vy = 0; MPX.grounded = true; }
+      else MPX.grounded = false;
+    } else { MPX.py = 0; MPX.vy = 0; MPX.grounded = true; }
+  }
   else {
     const g = mpxGroundAt(player.x, player.z);
     MPX.vy -= 13 * dt;
@@ -4999,7 +5031,10 @@ if(isTouch){
   const bar = document.querySelector(".torchbar");
   const jb = document.createElement("button");
   jb.className = "knob"; jb.innerHTML = "跳<br>␣";
-  jb.addEventListener("click", mpxJump); bar.appendChild(jb);
+  const doJump = e => { if(e){ e.preventDefault(); e.stopPropagation(); } mpxJump(); };
+  jb.addEventListener("pointerdown", doJump);
+  jb.addEventListener("touchstart", doJump, { passive:false });
+  bar.appendChild(jb);
   const ab = document.createElement("button");
   ab.className = "knob"; ab.innerHTML = "互动<br>E";
   // 按住 = keys.KeyE 一直为真：既能一次性互动，也能"按住启动放映机"
