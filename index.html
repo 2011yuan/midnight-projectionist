@@ -93,6 +93,8 @@ h1{margin:0 0 10px;font-size:clamp(30px,6vw,52px);font-weight:400;letter-spacing
 .rotateTip .rtIcon{font-size:64px;color:var(--warm);animation:rtspin 2.2s ease-in-out infinite}
 .rotateTip .rtTxt{font-size:15px;line-height:1.9;letter-spacing:1px}
 .rotateTip .rtTxt span{font-size:12px;color:#8a8172}
+.rotateTip[hidden],.joy[hidden]{display:none!important}
+.rotateTip .rtSkip{margin-top:10px;padding:10px 20px;border:1px solid #4a4236;border-radius:8px;background:rgba(30,28,24,.92);color:#cfc4b2;font-size:13px;font-family:var(--mono);cursor:pointer}
 @keyframes rtspin{0%,40%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
 @media (max-width:900px){
   /* 手机端：右下角 3x3 按钮网格，左下摇杆，两区互不重叠 */
@@ -416,6 +418,7 @@ h1{margin:0 0 10px;font-size:clamp(30px,6vw,52px);font-weight:400;letter-spacing
   <div class="rotateTip" id="rotateTip" hidden>
     <div class="rtIcon">&#8635;</div>
     <div class="rtTxt">请把手机横过来<br><span>横屏才有完整视野与操作区</span></div>
+    <button id="rtSkip" class="rtSkip">仍要竖屏玩</button>
   </div>
   <div class="hint" id="hint">WASD 移动 · 拖动转视角 · Q 手电 · F 爆闪 · 走廊按住 E 启动放映机 · 看纸条按 R · 终端按 T · 门按 X · 值班台按 C</div>
 </div>
@@ -2627,15 +2630,24 @@ function setupInput(){
 
 // ===== 动作 =====
 // 竖屏提示：手机竖屏时盖一层，横过来自动消失
+let mpxRtSkip = false, mpxRtLast = null;
 function mpxCheckOrientation(){
   const tip = $("rotateTip");
   if(!tip) return;
   const portrait = innerHeight > innerWidth;
-  const show = isTouch && portrait && running && !MPX.ui && !cctv.open;
+  const show = isTouch && portrait && running && !MPX.ui && !cctv.open && !mpxRtSkip;
+  if(show === mpxRtLast) return;
+  mpxRtLast = show;
   tip.hidden = !show;
 }
 window.addEventListener("resize", mpxCheckOrientation);
 window.addEventListener("orientationchange", () => setTimeout(mpxCheckOrientation, 120));
+window.addEventListener("orientationchange", () => setTimeout(mpxCheckOrientation, 700));
+setInterval(mpxCheckOrientation, 400);
+(function(){
+  const b = document.getElementById("rtSkip");
+  if(b) b.addEventListener("click", function(){ mpxRtSkip = true; mpxRtLast = null; mpxCheckOrientation(); });
+})();
 
 function toggleTorch(){
   if(!running) return;
@@ -3886,7 +3898,7 @@ const MPX_SIDE = {
   xMin:4.9, xMax:15.2, zMin:-5.0, zMax:1.6,
   arcXMin:15.2, arcXMax:19.2, arcZMin:-4.6, arcZMax:1.6
 };
-const MPX_PITS = [[6.6,8.3],[10.6,12.3]];
+const MPX_PITS = [[6.9,7.9],[10.9,11.9]];
 const MPX_CRATES = [
   {x:5.9,z:0.9,hw:0.58,hd:0.58,h:0.62},
   {x:9.6,z:-4.0,hw:0.58,hd:0.58,h:0.62}
@@ -4086,12 +4098,20 @@ function mpxBuild(){
     const f = new THREE.Mesh(new THREE.PlaneGeometry(x1-x0, MPX_SIDE.zMax-MPX_SIDE.zMin), mat(0x2c2a26, 0.95));
     f.rotation.x = -Math.PI/2; f.position.set((x0+x1)/2, 0, fz); scene.add(f);
   }
+  for(const [hx0] of MPX_PITS){
+    const cvh = document.createElement("canvas"); cvh.width=256; cvh.height=64; const ch = cvh.getContext("2d");
+    ch.fillStyle="#f0cf72"; ch.font="bold 30px sans-serif"; ch.textAlign="center";
+    ch.fillText("\u6309 \u7a7a\u683c / \u8df3 \u8d8a\u8fc7", 128, 44);
+    const txh = new THREE.CanvasTexture(cvh); if(THREE.SRGBColorSpace) txh.colorSpace = THREE.SRGBColorSpace;
+    const plh = new THREE.Mesh(new THREE.PlaneGeometry(1.5,0.38), new THREE.MeshBasicMaterial({map:txh, transparent:true}));
+    plh.rotation.x = -Math.PI/2; plh.position.set(hx0-1.05, 0.02, fz); scene.add(plh);
+  }
   const pitDark = new THREE.Mesh(new THREE.PlaneGeometry(MPX_PITS[1][1]-MPX_PITS[0][0], MPX_SIDE.zMax-MPX_SIDE.zMin),
     new THREE.MeshBasicMaterial({color:0x020204}));
   pitDark.rotation.x = -Math.PI/2; pitDark.position.set((MPX_PITS[0][0]+MPX_PITS[1][1])/2, -3.0, fz); scene.add(pitDark);
   for(const p of MPX_PITS) for(const x of p){
-    const edge = box(0.08, 0.025, MPX_SIDE.zMax-MPX_SIDE.zMin, 0x5a4a20);
-    edge.position.set(x + (x===p[0] ? -0.04 : 0.04), 0.012, fz); scene.add(edge);
+    const edge = box(0.16, 0.03, MPX_SIDE.zMax-MPX_SIDE.zMin, 0xd8a83a);
+    edge.position.set(x + (x===p[0] ? -0.08 : 0.08), 0.015, fz); scene.add(edge);
   }
   const cCeil = new THREE.Mesh(new THREE.PlaneGeometry(MPX_SIDE.xMax-MPX_SIDE.xMin, MPX_SIDE.zMax-MPX_SIDE.zMin), mat(0x191a1e, 1));
   cCeil.rotation.x = Math.PI/2; cCeil.position.set((MPX_SIDE.xMin+MPX_SIDE.xMax)/2, 3.3, fz); scene.add(cCeil);
@@ -4235,7 +4255,7 @@ function mpxPitFall(){
 function mpxJump(){
   if(!running || MPX.ui || cctv.open || inFear() || siegeT >= 0) return;
   if(!MPX.grounded) return;
-  MPX.vy = 4.9; MPX.grounded = false;
+  MPX.vy = 5.4; MPX.grounded = false;
   mpxBeep(220, 0.07, "square", 0.03);
 }
 function mpxAddDoor(o){ MPX_DOORS.push(o); }
@@ -4895,6 +4915,7 @@ window.__MP.mpx = {
   setKey(code, val){ keys[code] = !!val; return !!keys[code]; },
   holdE(on){ keys.KeyE = !!on; if(!on) keys.Enter = false; return !!keys.KeyE; },
   openGate(){ MPX.gateOpen = true; return true; },
+  openAll(){ for(const d of mpxBranchDoors) d.opened = true; MPX.gateOpen=true; MPX.lockOpen=true; MPX.vaultOpen=true; MPX.powerOn=true; return mpxBranchDoors.length; },
   openLock(){ MPX.lockOpen = true; return true; },
   note(i){ return { t:MPX_NOTES[i].t, b:MPX_NOTES[i].b }; },
   canStand(x,z){ return !!mpxCanStand(x,z); },
