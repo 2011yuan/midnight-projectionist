@@ -86,7 +86,25 @@ h1{margin:0 0 10px;font-size:clamp(30px,6vw,52px);font-weight:400;letter-spacing
 .knob.cd{opacity:.4}
 .joy{position:fixed;left:20px;bottom:24px;width:112px;height:112px;z-index:37;
   border:1px solid #3d362c;border-radius:50%;background:rgba(8,9,12,.55);
-  display:flex;align-items:center;justify-content:center;touch-action:none}
+  display:flex;align-items:center;justify-content:center;touch-action:none;opacity:.85}
+.rotateTip{position:fixed;inset:0;z-index:99;background:#020306;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  color:#dfd5c7;font-family:var(--mono);text-align:center}
+.rotateTip .rtIcon{font-size:64px;color:var(--warm);animation:rtspin 2.2s ease-in-out infinite}
+.rotateTip .rtTxt{font-size:15px;line-height:1.9;letter-spacing:1px}
+.rotateTip .rtTxt span{font-size:12px;color:#8a8172}
+@keyframes rtspin{0%,40%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
+@media (max-width:900px){
+  /* 手机端：右下角 3x3 按钮网格，左下摇杆，两区互不重叠 */
+  .torchbar{right:10px;bottom:10px;gap:6px;display:grid;
+    grid-template-columns:repeat(3,54px);grid-auto-rows:54px;justify-content:end;align-content:end;max-width:none}
+  .knob{width:54px;height:54px;font-size:9px;letter-spacing:.5px}
+  .joy{width:112px;height:112px;left:16px;bottom:16px}
+}
+@media (orientation:portrait) and (max-width:900px){
+  .torchbar{opacity:.25;pointer-events:none}
+  .joy{opacity:.25;pointer-events:none}
+}
 .joy>i{width:44px;height:44px;border-radius:50%;background:#6b6149;border:1px solid #9c8d6b;pointer-events:none}
 .hint{position:fixed;left:50%;bottom:8px;transform:translateX(-50%);z-index:36;
   font:10px var(--mono);letter-spacing:1px;color:#6f685c;pointer-events:none;text-align:center;
@@ -294,6 +312,13 @@ h1{margin:0 0 10px;font-size:clamp(30px,6vw,52px);font-weight:400;letter-spacing
 .mpxTerm .tExit:hover{background:#143a1d}
 .mpxTerm .tExit:active{background:#1c4d28}
 
+
+/* 手机端：底部提示条隐藏（按钮网格已占用右下），并加大触控容错 */
+@media (max-width:900px){
+  #hint.hint{display:none !important}
+  .knob{touch-action:manipulation}
+  .torchbar .knob{user-select:none;-webkit-user-select:none}
+}
 </style>
 </head>
 <body>
@@ -388,6 +413,10 @@ h1{margin:0 0 10px;font-size:clamp(30px,6vw,52px);font-weight:400;letter-spacing
     <button class="knob" id="btnCctv">值班台<br>C</button>
   </div>
   <div class="joy" id="joy" hidden><i id="joyNub"></i></div>
+  <div class="rotateTip" id="rotateTip" hidden>
+    <div class="rtIcon">&#8635;</div>
+    <div class="rtTxt">请把手机横过来<br><span>横屏才有完整视野与操作区</span></div>
+  </div>
   <div class="hint" id="hint">WASD 移动 · 拖动转视角 · Q 手电 · F 爆闪 · 走廊按住 E 启动放映机 · 看纸条按 R · 终端按 T · 门按 X · 值班台按 C</div>
 </div>
 
@@ -2498,12 +2527,73 @@ function setupInput(){
   window.addEventListener("blur", () => { for(const k in keys) keys[k] = false; });
   document.addEventListener("visibilitychange", () => { if(document.hidden){ for(const k in keys) keys[k] = false; } });
 
+  // 触屏：左半屏按下 -> 摇杆；右半屏按下 -> 转视角。两边可同时按，互不抢指针。
+  const isLeftHalf = e => e.clientX < innerWidth * 0.5;
   zone.addEventListener("pointerdown", e => {
-    if(!running || lookId !== null || e.button > 0) return;
+    if(!running || e.button > 0) return;
+    if(isTouch && isLeftHalf(e)){
+      if(joyId === null){
+        // 在按下位置就地生成摇杆
+        joy.style.left = Math.max(10, e.clientX - 56) + 'px';
+        joy.style.bottom = Math.max(10, innerHeight - e.clientY - 56) + 'px';
+        joy.hidden = false;
+        joyId = e.pointerId;
+        try{ joy.setPointerCapture(e.pointerId); }catch(err){}
+        setJoyAt(e.clientX, e.clientY);
+      }
+      return;
+    }
+    if(lookId !== null) return;
     lookId = e.pointerId; lookX = e.clientX; lookY = e.clientY; lookTravel = 0;
     try{ zone.setPointerCapture(e.pointerId); }catch(err){}
   });
+  // 真机/CDP 兼容：部分环境只发 touch 不合成 pointer，这里补一套
+  zone.addEventListener("touchstart", e => {
+    if(!running) return;
+    for(const t of e.changedTouches){
+      if(isLeftHalf({clientX:t.clientX}) && joyId === null){
+        joy.style.left = Math.max(10, t.clientX - 56) + "px";
+        joy.style.bottom = Math.max(10, innerHeight - t.clientY - 56) + "px";
+        joy.hidden = false;
+        joyId = t.identifier;
+        setJoyAt(t.clientX, t.clientY);
+        if(e.cancelable) e.preventDefault();
+      } else if(lookId === null){
+        lookId = t.identifier; lookX = t.clientX; lookY = t.clientY; lookTravel = 0;
+        if(e.cancelable) e.preventDefault();
+      }
+    }
+  }, {passive:false});
+  zone.addEventListener("touchmove", e => {
+    if(!running) return;
+    for(const t of e.changedTouches){
+      if(t.identifier === joyId){ setJoyAt(t.clientX, t.clientY); if(e.cancelable) e.preventDefault(); }
+      else if(t.identifier === lookId){
+        const dx = t.clientX - lookX, dy = t.clientY - lookY;
+        lookX = t.clientX; lookY = t.clientY;
+        player.yaw -= dx * CFG.look * sensitivity;
+        player.pitch = clamp(player.pitch - dy * CFG.look * 0.8 * sensitivity, -0.55, 0.55);
+        if(e.cancelable) e.preventDefault();
+      }
+    }
+  }, {passive:false});
+  const endTouch = e => {
+    for(const t of e.changedTouches){
+      if(t.identifier === joyId){
+        joyId = null; joyX = joyY = 0;
+        if(nub) nub.style.transform = "translate(0px,0px)";
+      }
+      if(t.identifier === lookId) lookId = null;
+    }
+  };
+  zone.addEventListener("touchend", endTouch);
+  zone.addEventListener("touchcancel", endTouch);
   zone.addEventListener("pointermove", e => {
+    if(e.pointerId === joyId && running){
+      const jr = joy.getBoundingClientRect();
+      setJoyAt(e.clientX, e.clientY, jr);
+      return;
+    }
     if(e.pointerId !== lookId || !running) return;
     const dx = e.clientX - lookX, dy = e.clientY - lookY;
     lookX = e.clientX; lookY = e.clientY;
@@ -2511,26 +2601,24 @@ function setupInput(){
     player.yaw -= dx * CFG.look * sensitivity;
     player.pitch = clamp(player.pitch - dy * CFG.look * 0.8 * sensitivity, -0.55, 0.55);
   });
-  const endLook = e => { if(e.pointerId === lookId) lookId = null; };
+  const endLook = e => {
+    if(e.pointerId === lookId) lookId = null;
+    if(e.pointerId === joyId){ joyId = null; joyX = joyY = 0; nub.style.transform = "translate(0,0)"; }
+  };
   zone.addEventListener("pointerup", endLook);
   zone.addEventListener("pointercancel", endLook);
   zone.addEventListener("lostpointercapture", () => { lookId = null; });
 
   const joy = $("joy"), nub = $("joyNub");
-  const setJoy = e => {
-    const r = joy.getBoundingClientRect(), max = r.width * 0.3;
-    let dx = e.clientX - r.left - r.width/2, dy = e.clientY - r.top - r.height/2;
+  // 摇杆位移：以摇杆圆盘中心为原点
+  const setJoyAt = (cx, cy, rect) => {
+    const r = rect || joy.getBoundingClientRect(), max = r.width * 0.34;
+    let dx = cx - r.left - r.width/2, dy = cy - r.top - r.height/2;
     const d = Math.hypot(dx, dy);
     if(d > max){ dx = dx/d*max; dy = dy/d*max; }
     nub.style.transform = "translate(" + dx + "px," + dy + "px)";
     joyX = dx/max; joyY = dy/max;
   };
-  joy.addEventListener("pointerdown", e => { e.preventDefault(); joyId = e.pointerId; try{joy.setPointerCapture(e.pointerId);}catch(err){} setJoy(e); });
-  joy.addEventListener("pointermove", e => { if(e.pointerId === joyId) setJoy(e); });
-  const endJoy = e => { if(e.pointerId === joyId){ joyId = null; joyX = joyY = 0; nub.style.transform = "translate(0,0)"; } };
-  joy.addEventListener("pointerup", endJoy);
-  joy.addEventListener("pointercancel", endJoy);
-  joy.addEventListener("lostpointercapture", endJoy);
 
   $("btnTorch").addEventListener("click", toggleTorch);
   $("btnFlash").addEventListener("click", doFlash);
@@ -2538,6 +2626,17 @@ function setupInput(){
 }
 
 // ===== 动作 =====
+// 竖屏提示：手机竖屏时盖一层，横过来自动消失
+function mpxCheckOrientation(){
+  const tip = $("rotateTip");
+  if(!tip) return;
+  const portrait = innerHeight > innerWidth;
+  const show = isTouch && portrait && running && !MPX.ui && !cctv.open;
+  tip.hidden = !show;
+}
+window.addEventListener("resize", mpxCheckOrientation);
+window.addEventListener("orientationchange", () => setTimeout(mpxCheckOrientation, 120));
+
 function toggleTorch(){
   if(!running) return;
   if(!torchOn && battery <= CFG.torchMin){ note("电量太低，先关灯回一会儿"); return; }
@@ -4718,27 +4817,72 @@ if(isTouch){
   jb.addEventListener("click", mpxJump); bar.appendChild(jb);
   const ab = document.createElement("button");
   ab.className = "knob"; ab.innerHTML = "互动<br>E";
-  ab.addEventListener("click", () => {
-    if(MPX.ui){ return; }
-    let near = null, best = 1e9;
-    for(const it of mpxItems()){
-      const d = Math.hypot(player.x - it.x, player.z - it.z);
-      if(d < it.r && d < best){ best = d; near = it; }
-    }
-    if(near) near.fn(); else note("这里没有可以互动的东西");
-  });
+  // 按住 = keys.KeyE 一直为真：既能一次性互动，也能"按住启动放映机"
+  const pressE = e => { e.preventDefault(); keys.KeyE = true; mpxTapInteract(); };
+  const releaseE = e => { keys.KeyE = false; };
+  ab.addEventListener("pointerdown", pressE);
+  ab.addEventListener("pointerup", releaseE);
+  ab.addEventListener("pointercancel", releaseE);
+  ab.addEventListener("pointerleave", releaseE);
   bar.appendChild(ab);
   const rb = document.createElement("button");
   rb.className = "knob"; rb.innerHTML = "重新<br>↻";
   rb.addEventListener("click", () => { if(confirm("重新开始本局？")) location.reload(); });
   bar.appendChild(rb);
+  // 纸条 R（按住生效）
+  const rkb = document.createElement("button");
+  rkb.className = "knob"; rkb.innerHTML = "纸条<br>R";
+  const pressR = e => { e.preventDefault(); keys.KeyR = true; mpxTapNote(); };
+  const releaseR = e => { keys.KeyR = false; };
+  rkb.addEventListener("pointerdown", pressR);
+  rkb.addEventListener("pointerup", releaseR);
+  rkb.addEventListener("pointercancel", releaseR);
+  rkb.addEventListener("pointerleave", releaseR);
+  bar.appendChild(rkb);
+  // 终端 T
+  const tb = document.createElement("button");
+  tb.className = "knob"; tb.innerHTML = "终端<br>T";
+  tb.addEventListener("click", () => {
+    if(!MPX.ui && !cctv.open && running && !dead && !won && siegeT < 0) mpxTermOpen();
+    else if(MPX.ui === "mpxTerm") mpxCloseUi();
+  });
+  bar.appendChild(tb);
+  // 开门 X
+  const xb = document.createElement("button");
+  xb.className = "knob"; xb.innerHTML = "开门<br>X";
+  xb.addEventListener("click", () => {
+    if(!MPX.ui && !cctv.open && running && !dead && !won) mpxTryDoor();
+  });
+  bar.appendChild(xb);
+}
+
+// 触屏互动：一次点按触发最近物件（与按住 E 并行，不冲突）
+function mpxTapInteract(){
+  if(MPX.ui) return;
+  let near = null, best = 1e9;
+  for(const it of mpxItems()){
+    const d = Math.hypot(player.x - it.x, player.z - it.z);
+    if(d < it.r && d < best && it.key !== "r"){ best = d; near = it; }
+  }
+  if(near) near.fn(); else note("这里没有可以互动的东西");
+}
+// 触屏纸条：只挑 R 类物件
+function mpxTapNote(){
+  if(MPX.ui) return;
+  let near = null, best = 1e9;
+  for(const it of mpxItems()){
+    if(it.key !== "r") continue;
+    const d = Math.hypot(player.x - it.x, player.z - it.z);
+    if(d < it.r && d < best){ best = d; near = it; }
+  }
+  if(near) near.fn();
 }
 
 // ---- 接线：initScene / resetRun 叠加 ----
 const _mpxOldInitScene = initScene;
 initScene = function(){ _mpxOldInitScene(); try{ mpxBuild(); }catch(e){ /* 增强层失败不拖垮主游戏 */ } };
 const _mpxOldResetRun = resetRun;
-resetRun = function(fresh){ _mpxOldResetRun(fresh); mpxResetRun(!!fresh); };
+resetRun = function(fresh){ _mpxOldResetRun(fresh); mpxResetRun(!!fresh); try{ mpxCheckOrientation(); }catch(e){} };
 
 // ---- 测试钩子 ----
 window.__MP.mpx = {
@@ -4748,6 +4892,8 @@ window.__MP.mpx = {
     powerOn:MPX.powerOn, vaultOpen:MPX.vaultOpen, reel3:MPX.reel3, reel3Played:MPX.reel3Played,
     flare:{has:MPX.flare.has, ammo:MPX.flare.ammo}, tapes:(MPX.tape1?1:0)+(MPX.tape2?1:0)+(MPX.tape3?1:0),
     built:!!mpxGateLeaf, lockLeafZ:mpxLockLeaf?+mpxLockLeaf.position.z.toFixed(2):null }; },
+  setKey(code, val){ keys[code] = !!val; return !!keys[code]; },
+  holdE(on){ keys.KeyE = !!on; if(!on) keys.Enter = false; return !!keys.KeyE; },
   openGate(){ MPX.gateOpen = true; return true; },
   openLock(){ MPX.lockOpen = true; return true; },
   note(i){ return { t:MPX_NOTES[i].t, b:MPX_NOTES[i].b }; },
