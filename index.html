@@ -3894,7 +3894,8 @@ const MPX = {
   tension:0, jamUntil:0
 };
 const MPX_SIDE = {
-  doorZMin:-7.2, doorZMax:-2.8,
+  // 开口必须等于走廊全宽，否则南侧会出现「走到墙里」的隐形墙
+  doorZMin:-5.0, doorZMax:1.6,
   xMin:4.9, xMax:15.2, zMin:-5.0, zMax:1.6,
   arcXMin:15.2, arcXMax:19.2, arcZMin:-4.6, arcZMax:1.6
 };
@@ -4071,7 +4072,7 @@ function mpxBuild(){
   // 西墙照原样补回
   const wWall = new THREE.Mesh(new THREE.PlaneGeometry(len, 4.4), wallMat);
   wWall.position.set(-HALL.halfW, 2.2, (HALL.zMax+HALL.zMin)/2); wWall.rotation.y = Math.PI/2; scene.add(wWall);
-  // 东墙：两段 + 门楣，中间留门洞 z∈[-6.3,-3.7]
+  // 东墙：两段 + 门楣，门洞 = 走廊全宽 z∈[-5.0,1.6]
   const seg = (z0, z1) => {
     const m = new THREE.Mesh(new THREE.PlaneGeometry(z1-z0, 4.4), wallMat);
     m.position.set(HALL.halfW, 2.2, (z0+z1)/2); m.rotation.y = -Math.PI/2; scene.add(m); return m;
@@ -4305,7 +4306,7 @@ function mpxBlockedHint(x, z){
   if(now - mpxHintAt < 1700) return;
   mpxHintAt = now;
   let msg = null;
-  if(x > 3.2 && x <= 15.2 && !MPX.gateOpen) msg = "东墙门禁锁着 · 回大厅走到墙边面板按 X 输 4 位密码";
+  if(x > 3.2 && x <= 15.2 && !MPX.gateOpen) msg = "东墙门禁锁着 · 走到门口发光的门框前按 X 输 4 位密码";
   else if(x > 15.2 && x <= 19.2 && !MPX.lockOpen) msg = "档案室铁门锁着 · 站在黄线标记处按 X 撬锁";
   else if(x > 19.2 && !MPX.vaultOpen) msg = "舱门是 4 位电子锁 · 先恢复深区供电，密码在纸条与胶片里";
   else {
@@ -4341,7 +4342,7 @@ function mpxZoneName(x, z){
 function mpxObjective(){
   const i = MPX.notesRead.findIndex(v => !v);
   if(i >= 0 && MPX_NOTES[i]) return { label: "走廊纸条 · 按 R 读", x: MPX_NOTES[i].x, z: MPX_NOTES[i].z };
-  if(!MPX.gateOpen) return { label: "东墙门禁 · 输四位密码", x: 3.5, z: -7.0 };
+  if(!MPX.gateOpen) return { label: "东墙门禁 · 走到门口按 X", x: 3.8, z: -1.7 };
   if(!MPX.lockOpen) return { label: "员工通道铁门 · 按 E 撬锁", x: 14.4, z: -1.5 };
   if(!mpxDoorOpened(5.8, -5.0)) return { label: "北岔门 · 走到门前按 X", x: 5.8, z: -5.0 };
   if(!mpxDoorOpened(6.8, -15)) return { label: "迷宫尽头锈暗门 · 按 X", x: 6.8, z: -15.0 };
@@ -4486,7 +4487,10 @@ updatePlayer = function(dt){
 // ---- 互动点 ----
 function mpxItems(){
   const list = [];
-  if(!MPX.gateOpen) list.push({x:3.5, z:-7.0, r:2.1, label:"门禁面板 · 输入密码", fn:mpxKeypadOpen});
+  if(!MPX.gateOpen){
+    list.push({x:3.5, z:-7.0, r:2.1, label:"门禁面板 · 输入密码", fn:mpxKeypadOpen});
+    list.push({x:3.8, z:-1.7, r:2.4, label:"门禁面板 · 输入密码", fn:mpxKeypadOpen});
+  }
   if(MPX.gateOpen && !MPX.lockOpen) list.push({x:14.4, z:-1.5, r:2.1, label:"档案室铁门 · 开锁", fn:mpxPickOpen});
   if(MPX.lockOpen) list.push({x:MPX_SIDE.arcXMax-1.6, z:-1.5, r:2.2, label:"绿色终端 · 安全通道", fn:mpxTermOpen});
   list.push({x:-1.2, z:0.4, r:2.6, label:"绿色终端 · 安全链路 (T)", fn:mpxTermOpen});
