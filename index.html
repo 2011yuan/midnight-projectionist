@@ -3894,11 +3894,13 @@ const MPX = {
   tension:0, jamUntil:0
 };
 const MPX_SIDE = {
-  doorZMin:-6.3, doorZMax:-3.7,
+  doorZMin:-7.2, doorZMax:-2.8,
   xMin:4.9, xMax:15.2, zMin:-5.0, zMax:1.6,
   arcXMin:15.2, arcXMax:19.2, arcZMin:-4.6, arcZMax:1.6
 };
 const MPX_PITS = [[6.9,7.9],[10.9,11.9]];
+// 坑只在走廊北半幅挖空（z 从 zMin 到 MPX_PIT_Z[1]）；南侧是实心便道，不跳也能绕过去
+const MPX_PIT_Z = [-5.0, -1.6];
 const MPX_CRATES = [
   {x:5.9,z:0.9,hw:0.58,hd:0.58,h:0.62},
   {x:9.6,z:-4.0,hw:0.58,hd:0.58,h:0.62}
@@ -4091,27 +4093,65 @@ function mpxBuild(){
     const bar = box(0.13, 0.07, MPX_SIDE.doorZMax - MPX_SIDE.doorZMin - 0.2, 0x201a10);
     bar.position.set(HALL.halfW - 0.01, 0.5 + i*0.85, (MPX_SIDE.doorZMin+MPX_SIDE.doorZMax)/2); scene.add(bar);
   }
-  // 维修通道：地面三段（留两个坑）+ 顶 + 两墙
+  // 维修通道：地面三段 + 南侧便道（保证一定走得过去）+ 顶 + 两墙
   const fz = (MPX_SIDE.zMin + MPX_SIDE.zMax)/2;
   const flSeg = [[MPX_SIDE.xMin, MPX_PITS[0][0]],[MPX_PITS[0][1], MPX_PITS[1][0]],[MPX_PITS[1][1], MPX_SIDE.xMax]];
   for(const [x0,x1] of flSeg){
     const f = new THREE.Mesh(new THREE.PlaneGeometry(x1-x0, MPX_SIDE.zMax-MPX_SIDE.zMin), mat(0x2c2a26, 0.95));
     f.rotation.x = -Math.PI/2; f.position.set((x0+x1)/2, 0, fz); scene.add(f);
   }
-  for(const [hx0] of MPX_PITS){
-    const cvh = document.createElement("canvas"); cvh.width=256; cvh.height=64; const ch = cvh.getContext("2d");
-    ch.fillStyle="#f0cf72"; ch.font="bold 30px sans-serif"; ch.textAlign="center";
-    ch.fillText("\u6309 \u7a7a\u683c / \u8df3 \u8d8a\u8fc7", 128, 44);
-    const txh = new THREE.CanvasTexture(cvh); if(THREE.SRGBColorSpace) txh.colorSpace = THREE.SRGBColorSpace;
-    const plh = new THREE.Mesh(new THREE.PlaneGeometry(1.5,0.38), new THREE.MeshBasicMaterial({map:txh, transparent:true}));
-    plh.rotation.x = -Math.PI/2; plh.position.set(hx0-1.05, 0.02, fz); scene.add(plh);
+  // 便道：坑只占北半幅，南侧留实心地面 —— 不跳也能绕过去
+  const ledge0 = MPX_PIT_Z[1], ledge1 = MPX_SIDE.zMax, ledgeMid = (ledge0 + ledge1) / 2;
+  for(const p of MPX_PITS){
+    // 便道地面用 Basic 材质：不受手电影响，黑里也能看见（这是「能走过去」的视觉信号）
+    const lf = new THREE.Mesh(new THREE.PlaneGeometry(p[1]-p[0], ledge1-ledge0),
+      new THREE.MeshBasicMaterial({color:0x1b241b}));
+    lf.rotation.x = -Math.PI/2; lf.position.set((p[0]+p[1])/2, 0.002, ledgeMid); scene.add(lf);
   }
-  const pitDark = new THREE.Mesh(new THREE.PlaneGeometry(MPX_PITS[1][1]-MPX_PITS[0][0], MPX_SIDE.zMax-MPX_SIDE.zMin),
-    new THREE.MeshBasicMaterial({color:0x020204}));
-  pitDark.rotation.x = -Math.PI/2; pitDark.position.set((MPX_PITS[0][0]+MPX_PITS[1][1])/2, -3.0, fz); scene.add(pitDark);
-  for(const p of MPX_PITS) for(const x of p){
-    const edge = box(0.16, 0.03, MPX_SIDE.zMax-MPX_SIDE.zMin, 0xd8a83a);
-    edge.position.set(x + (x===p[0] ? -0.08 : 0.08), 0.015, fz); scene.add(edge);
+  // 荧光导向线：走廊南侧一条始终可见的暗绿线，跟着它走就不会掉坑
+  const gLine = new THREE.Mesh(new THREE.PlaneGeometry(MPX_SIDE.xMax - MPX_SIDE.xMin - 0.4, 0.26),
+    new THREE.MeshBasicMaterial({color:0x2f5a3a, transparent:true, opacity:0.85, depthWrite:false}));
+  gLine.rotation.x = -Math.PI/2;
+  gLine.position.set((MPX_SIDE.xMin + MPX_SIDE.xMax)/2, 0.03, 0.0);
+  scene.add(gLine);
+  // 支线：从主线拐向两个分支门
+  const gSpur = (x0,z0,x1,z1) => {
+    const L = Math.hypot(x1-x0, z1-z0);
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.22, L),
+      new THREE.MeshBasicMaterial({color:0x2f5a3a, transparent:true, opacity:0.7, depthWrite:false}));
+    m.rotation.x = -Math.PI/2; m.rotation.z = Math.atan2(x1-x0, z1-z0);
+    m.position.set((x0+x1)/2, 0.03, (z0+z1)/2); scene.add(m);
+  };
+  gSpur(5.8, 0.0, 5.8, -4.6);
+  gSpur(10.0, 0.0, 10.0, 1.5);
+  // 坑体：只在北半幅挖空
+  for(const p of MPX_PITS){
+    const dd = MPX_PIT_Z[1] - MPX_SIDE.zMin;
+    const pd = new THREE.Mesh(new THREE.PlaneGeometry(p[1]-p[0], dd), new THREE.MeshBasicMaterial({color:0x020204}));
+    pd.rotation.x = -Math.PI/2; pd.position.set((p[0]+p[1])/2, -3.0, MPX_SIDE.zMin + dd/2); scene.add(pd);
+  }
+  // 坑沿警示条：南北向两条(坑左右沿) + 东西向一条(便道边缘，提示走这边)
+  for(const p of MPX_PITS){
+    for(const x of p){
+      const e = box(0.16, 0.03, MPX_PIT_Z[1] - MPX_SIDE.zMin, 0xd8a83a);
+      e.position.set(x + (x===p[0] ? -0.08 : 0.08), 0.015, (MPX_SIDE.zMin + MPX_PIT_Z[1])/2); scene.add(e);
+    }
+    const hb = box(p[1]-p[0], 0.03, 0.14, 0xd8a83a);
+    hb.position.set((p[0]+p[1])/2, 0.015, MPX_PIT_Z[1]); scene.add(hb);
+  }
+  // 地面文字提示
+  const mkFloorText = (txt, w, h, px, pz, col) => {
+    const cv = document.createElement("canvas"); cv.width = 512; cv.height = 96;
+    const cx = cv.getContext("2d");
+    cx.fillStyle = col || "#f0cf72"; cx.font = "bold 38px sans-serif"; cx.textAlign = "center";
+    cx.fillText(txt, 256, 62);
+    const tx = new THREE.CanvasTexture(cv); if(THREE.SRGBColorSpace) tx.colorSpace = THREE.SRGBColorSpace;
+    const pl = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({map:tx, transparent:true}));
+    pl.rotation.x = -Math.PI/2; pl.position.set(px, 0.02, pz); scene.add(pl);
+  };
+  for(const p of MPX_PITS){
+    mkFloorText("空格跳越 · 或走便道", 1.6, 0.30, p[0] - 1.05, fz, "#f0cf72");
+    mkFloorText("绕行", 0.8, 0.30, (p[0]+p[1])/2, ledge0 + 0.75, "#8fe0a0");
   }
   const cCeil = new THREE.Mesh(new THREE.PlaneGeometry(MPX_SIDE.xMax-MPX_SIDE.xMin, MPX_SIDE.zMax-MPX_SIDE.zMin), mat(0x191a1e, 1));
   cCeil.rotation.x = Math.PI/2; cCeil.position.set((MPX_SIDE.xMin+MPX_SIDE.xMax)/2, 3.3, fz); scene.add(cCeil);
@@ -4242,7 +4282,7 @@ function mpxCanStand(x, z){
 function mpxGroundAt(x, z){
   // 坑只存在于走廊地板（z 在 [-5,1.6] 内）；分支房间地板是实心的
   if(x > 4.9 && x <= 15.2 && z >= MPX_SIDE.zMin && z <= MPX_SIDE.zMax){
-    for(const p of MPX_PITS) if(x >= p[0] && x <= p[1]) return -99;
+    for(const p of MPX_PITS) if(x >= p[0] && x <= p[1] && z >= MPX_PIT_Z[0] && z <= MPX_PIT_Z[1]) return -99;
     for(const c of MPX_CRATES) if(Math.abs(x-c.x) <= c.hw*0.8 && Math.abs(z-c.z) <= c.hd*0.8) return c.h;
   }
   return 0;
@@ -4255,15 +4295,118 @@ function mpxPitFall(){
 function mpxJump(){
   if(!running || MPX.ui || cctv.open || inFear() || siegeT >= 0) return;
   if(!MPX.grounded) return;
-  MPX.vy = 5.4; MPX.grounded = false;
+  MPX.vy = 5.9; MPX.grounded = false;
   mpxBeep(220, 0.07, "square", 0.03);
 }
 function mpxAddDoor(o){ MPX_DOORS.push(o); }
+
+// ===== MPX 导航指引层 v1：常驻「我在哪 / 下一步去哪」+ 未开门的荧光地面标记 =====
+let mpxGuideEl = null, mpxGuideZoneEl = null, mpxGuideObjEl = null, mpxGuideAcc = 0;
+const mpxGuideMarks = [];
+function mpxZoneName(x, z){
+  if(x <= 3.2) return "大厅 · 值班区";
+  if(x <= 4.9) return "东墙 · 门禁面板";
+  if(x <= 15.2){
+    if(z >= -5.0 && z <= 1.6) return "员工通道";
+    if(z < -15) return "配电室 · 深区";
+    if(z < -5.0) return "北岔 · 柱厅迷宫";
+    if(z > 1.6) return "南岔 · 道具库房";
+  }
+  if(x <= 19.2) return "档案室 · 安全通道";
+  return "地下档案库";
+}
+function mpxObjective(){
+  const i = MPX.notesRead.findIndex(v => !v);
+  if(i >= 0 && MPX_NOTES[i]) return { label: "走廊纸条 · 按 R 读", x: MPX_NOTES[i].x, z: MPX_NOTES[i].z };
+  if(!MPX.gateOpen) return { label: "东墙门禁 · 输四位密码", x: 3.5, z: -7.0 };
+  if(!MPX.lockOpen) return { label: "员工通道铁门 · 按 E 撬锁", x: 14.4, z: -1.5 };
+  if(!mpxDoorOpened(5.8, -5.0)) return { label: "北岔门 · 走到门前按 X", x: 5.8, z: -5.0 };
+  if(!mpxDoorOpened(6.8, -15)) return { label: "迷宫尽头锈暗门 · 按 X", x: 6.8, z: -15.0 };
+  if(!MPX.powerOn) return { label: "配电闸箱 · 按 E 拉闸", x: 6.9, z: -18.6 };
+  if(!MPX.reel3) return { label: "REEL 03 胶片盘 · 按 E 拾取", x: 6.0, z: -19.6 };
+  if(!MPX.vaultOpen) return { label: "档案库气动舱门 · 密码 0317", x: 19.2, z: -1.5 };
+  if(!MPX.gunTaken) return { label: "档案库枪箱 · 按 E 取信号枪", x: 21.6, z: -1.5 };
+  if(!mpxDoorOpened(10.0, 1.6)) return { label: "南岔门 · 走到门前按 X", x: 10.0, z: 1.6 };
+  if(!MPX.tape3) return { label: "库房磁带 ③ · 按 E", x: 12.2, z: 11.2 };
+  if(!MPX.tape1) return { label: "配电室磁带 ① · 按 E", x: 7.8, z: -20.4 };
+  if(!MPX.tape2) return { label: "档案库磁带 ② · 按 E", x: 20.0, z: 0.0 };
+  return { label: "回值班台：记满异常 / 启动 4 台放映机", x: 0.0, z: -2.0 };
+}
+function mpxArrowTo(tx, tz){
+  const yaw = player.yaw || 0;
+  const dx = tx - player.x, dz = tz - player.z;
+  const len = Math.hypot(dx, dz) || 1e-6;
+  const nx = dx / len, nz = dz / len;
+  const fx = -Math.sin(yaw), fz = -Math.cos(yaw);
+  const rx = Math.cos(yaw), rz = -Math.sin(yaw);
+  const deg = Math.atan2(nx * rx + nz * rz, nx * fx + nz * fz) * 180 / Math.PI;
+  let arrow = "↑";
+  if(deg >= -22.5 && deg < 22.5) arrow = "↑";
+  else if(deg >= 22.5 && deg < 67.5) arrow = "↗";
+  else if(deg >= 67.5 && deg < 112.5) arrow = "→";
+  else if(deg >= 112.5 && deg < 157.5) arrow = "↘";
+  else if(deg >= -67.5 && deg < -22.5) arrow = "↖";
+  else if(deg >= -112.5 && deg < -67.5) arrow = "←";
+  else if(deg >= -157.5 && deg < -112.5) arrow = "↙";
+  else arrow = "↓";
+  return { arrow: arrow, dist: len, deg: deg };
+}
+function mpxBuildGuides(){
+  if(!scene) return;
+  const spots = [[5.8, -5.0, 0x8ad4ff], [6.8, -15.0, 0xffb45c], [10.0, 1.6, 0x8ad4ff], [19.2, -1.5, 0xff8f5c]];
+  for(const sp of spots){
+    const m = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.5, 0.52),
+      new THREE.MeshBasicMaterial({ color: sp[2], transparent: true, opacity: 0.3, depthWrite: false })
+    );
+    m.rotation.x = -Math.PI / 2;
+    m.position.set(sp[0], 0.035, sp[1]);
+    m.visible = false;
+    scene.add(m);
+    mpxGuideMarks.push({ mesh: m, cx: sp[0], cz: sp[1] });
+  }
+}
+function mpxGuideHide(){ if(mpxGuideEl) mpxGuideEl.style.display = "none"; }
+function mpxGuideTick(dt){
+  mpxGuideAcc += (dt || 0.016);
+  if(mpxGuideAcc < 0.12) return;
+  mpxGuideAcc = 0;
+  if(!mpxGuideEl){
+    const d = document.createElement("div");
+    d.id = "mpxGuide";
+    d.style.cssText = "position:fixed;left:50%;top:56px;transform:translateX(-50%);z-index:34;display:none;" +
+      "text-align:center;pointer-events:none;max-width:92vw;" +
+      "font:12px/1.7 ui-monospace,Menlo,Consolas,monospace;" +
+      "text-shadow:0 0 8px #000,0 1px 2px #000;";
+    d.innerHTML = '<div id="mpxGuideZone" style="color:#8fa07c;font-size:10px;letter-spacing:2px"></div>' +
+      '<div id="mpxGuideObj" style="color:#e6d7a6;font-size:13px;white-space:nowrap"></div>';
+    document.body.appendChild(d);
+    mpxGuideEl = d;
+    mpxGuideZoneEl = d.querySelector("#mpxGuideZone");
+    mpxGuideObjEl = d.querySelector("#mpxGuideObj");
+  }
+  if(!scene) return;
+  if(!mpxGuideMarks.length) mpxBuildGuides();
+  const show = !!running && !MPX.ui && !(cctv && cctv.open);
+  const tsec = performance.now() / 1000;
+  for(const k of mpxGuideMarks){
+    k.mesh.visible = show && !mpxDoorOpened(k.cx, k.cz);
+    if(k.mesh.visible) k.mesh.material.opacity = 0.18 + 0.18 * (1 + Math.sin(tsec * 4 + k.cx + k.cz)) / 2;
+  }
+  if(!show){ mpxGuideHide(); return; }
+  const obj = mpxObjective();
+  const nav = mpxArrowTo(obj.x, obj.z);
+  mpxGuideZoneEl.textContent = mpxZoneName(player.x, player.z);
+  mpxGuideObjEl.textContent = nav.arrow + " " + obj.label + " · " + nav.dist.toFixed(1) + "m";
+  mpxGuideEl.style.display = "block";
+}
+
 
 // ---- updatePlayer 叠加版：原逻辑重写 + 重力/跳跃/新区域 ----
 const _mpxOldUpdatePlayer = updatePlayer;
 updatePlayer = function(dt){
   if(inFear() || siegeT >= 0){
+    mpxGuideHide();
     camera.position.set(player.x, CFG.eye + MPX.py, player.z);
     camera.rotation.order = "YXZ";
     camera.rotation.y = player.yaw; camera.rotation.x = player.pitch;
@@ -4298,9 +4441,10 @@ updatePlayer = function(dt){
       else MPX.grounded = false;
     } else {
       MPX.grounded = false;
-      if(MPX.py < -2.4) mpxPitFall();
+      if(MPX.py < -3.0) mpxPitFall();
     }
   }
+  mpxGuideTick(dt);
   camera.position.set(player.x, CFG.eye + MPX.py, player.z);
   camera.rotation.order = "YXZ";
   camera.rotation.y = player.yaw;
@@ -4707,14 +4851,14 @@ function mpxTermRun(raw){
   const cmd = raw.toLowerCase();
   const arg = cmd.split(/\s+/).slice(1).join(" ");
   const c0 = cmd.split(/\s+/)[0];
-  const alias = { "帮助":"help", "状态":"status", "监控":"cams", "她在哪":"ghost", "日志":"log", "充电":"charge", "提示":"hint", "清屏":"clear", "退出":"exit", "开门":"open", "手电":"torch", "时间":"time", "供电":"power", "余弹":"flare", "磁带":"tape" };
+  const alias = { "帮助":"help", "状态":"status", "监控":"cams", "她在哪":"ghost", "日志":"log", "充电":"charge", "提示":"hint", "清屏":"clear", "退出":"exit", "开门":"open", "手电":"torch", "时间":"time", "供电":"power", "余弹":"flare", "磁带":"tape", "地图":"map", "路线":"map", "导航":"map", "我在哪":"map" };
   const c = alias[c0] || c0;
   if(c === "help" || c === "?"){
     mpxTecho("可用指令：", "dim");
     [["help","指令列表"],["status","全馆状态总览"],["cams [1-6]","监控画面巡检"],["ghost","她的方位侦测"],
      ["log","值班日志回放"],["unlock &lt;四位&gt;","远程门禁"],["open","大门电磁锁（需放映机 4/4）"],
      ["charge","备用电源 +35%（剩 " + MPX.charges + " 次）"],["torch on|off","手电远程开关"],
-     ["hint","下一步该做什么"],["power","深区供电状态"],["flare","信号枪余弹"],["tape","磁带回放（0-3）"],
+     ["hint","下一步该做什么"],["power","深区供电状态"],["map","全馆路线图 / 我在哪"],["flare","信号枪余弹"],["tape","磁带回放（0-3）"],
      ["time","磁带时间码"],["clear","清屏"],["exit","断开"]].forEach(r =>
       mpxTecho("  <span class='ok'>" + r[0] + "</span>  " + r[1]));
   }
@@ -4784,6 +4928,27 @@ function mpxTermRun(raw){
   else if(c === "sudo"){ mpxTecho("对不起，这里没有管理员。1987 年以后就没有了。", "dim"); }
   else if(c === "clear"){ $("mpxTscr").innerHTML = ""; }
   else if(c === "exit" || c === "quit"){ mpxCloseUi(); return; }
+  else if(c === "map" || c === "where" || c === "route"){
+    const zn = mpxZoneName(player.x, player.z);
+    const ob = mpxObjective();
+    const nv = mpxArrowTo(ob.x, ob.z);
+    mpxTecho("当前位置：<span class='ok'>" + zn + "</span>");
+    mpxTecho("下一步：" + nv.arrow + " " + ob.label + "（" + nv.dist.toFixed(1) + " 米）");
+    mpxTecho("──── 全馆路线图 ────", "dim");
+    const done = s => s ? "<span class='ok'>✔</span> " : "<span style='color:#e0c37a'>▸</span> ";
+    const rows = [
+      [MPX.notesRead.every(function(v){ return v; }), "① 大厅走廊  三张纸条(R) · 东墙门禁输密码"],
+      [MPX.gateOpen, "② 员工通道  两处塌坑(空格跳过) · 尽头铁门撬锁"],
+      [MPX.lockOpen, "③ 档案室    东壁气动舱门(要通电)"],
+      [mpxDoorOpened(5.8, -5.0), "④ 北岔      北墙门(X) → 放映机房"],
+      [mpxDoorOpened(6.8, -15), "⑤ 柱厅迷宫  绕过实心柱子走到最里；尽头锈暗门(X)"],
+      [MPX.powerOn, "⑥ 配电室    闸箱口诀「一二四上 三下」· 捡 REEL 03"],
+      [MPX.vaultOpen, "⑦ 地下档案库 密码 0317(=REEL03 上的 03·17) · 信号枪×3(G)"],
+      [mpxDoorOpened(10.0, 1.6), "⑧ 南岔      南墙门(X) → 道具库房 · 电池 · 磁带③"]
+    ];
+    for(const r of rows) mpxTecho(done(r[0]) + r[1], "dim");
+    mpxTecho("提示：地上发光的方块 = 还没开的门；头顶那行字会一直指路。", "dim");
+  }
   else if(c === "power"){
     mpxTecho("深区供电 " + (MPX.powerOn ? "<span class='ok'>已恢复</span>" : "<span class='bad'>瘫痪</span>") + " · 配电室在放映机房迷宫尽头");
     mpxTecho("档案库舱门 " + (MPX.vaultOpen ? "<span class='ok'>已开</span>" : (MPX.powerOn ? "有电 · 等密码" : "键盘无电")));
@@ -4914,6 +5079,10 @@ window.__MP.mpx = {
     built:!!mpxGateLeaf, lockLeafZ:mpxLockLeaf?+mpxLockLeaf.position.z.toFixed(2):null }; },
   setKey(code, val){ keys[code] = !!val; return !!keys[code]; },
   holdE(on){ keys.KeyE = !!on; if(!on) keys.Enter = false; return !!keys.KeyE; },
+  groundAt(x,z){ return mpxGroundAt(x,z); },
+  pits(){ return { pits:MPX_PITS, z:MPX_PIT_Z, ledge:[MPX_SIDE.zMin, MPX_SIDE.zMax] }; },
+  guide(){ const ob = mpxObjective(); const nv = mpxArrowTo(ob.x, ob.z); return { zone: mpxZoneName(player.x, player.z), label: ob.label, tx: ob.x, tz: ob.z, dist: +nv.dist.toFixed(2), arrow: nv.arrow, visible: !!(mpxGuideEl && mpxGuideEl.style.display === "block") }; },
+  lopen(cx,cz){ const d = mpxBranchDoors.find(function(q){ return q.cx===cx && q.cz===cz; }); if(!d) return null; d.opened = true; return true; },
   openGate(){ MPX.gateOpen = true; return true; },
   openAll(){ for(const d of mpxBranchDoors) d.opened = true; MPX.gateOpen=true; MPX.lockOpen=true; MPX.vaultOpen=true; MPX.powerOn=true; return mpxBranchDoors.length; },
   openLock(){ MPX.lockOpen = true; return true; },
